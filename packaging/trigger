@@ -1,0 +1,27 @@
+#!/bin/sh
+
+###############################################################################
+# V A L I D A T E
+###############################################################################
+
+if [ -z "$1" ]; then
+        echo "Usage: $0 <event>"
+        exit 1
+else
+        COMMAND="$1"
+fi
+
+###############################################################################
+# M A I N
+###############################################################################
+
+/usr/bin/logger -p local6.notice -t events "$1 - event"
+
+TRIGGERS=`ls /var/clearos/events/$1/ 2>/dev/null`
+
+for TRIGGER in $TRIGGERS; do
+    if [ -x "/var/clearos/events/$1/$TRIGGER" ]; then
+        /usr/bin/logger -p local6.notice -t events "$1 - triggered $TRIGGER"
+        /var/clearos/events/$1/$TRIGGER
+    fi
+done
