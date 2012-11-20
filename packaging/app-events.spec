@@ -1,7 +1,7 @@
 
 Name: app-events
 Epoch: 1
-Version: 1.1.1
+Version: 1.4.4
 Release: 1%{dist}
 Summary: Event System - Core
 License: LGPLv3
