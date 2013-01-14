@@ -15,13 +15,13 @@ fi
 # M A I N
 ###############################################################################
 
-/usr/bin/logger -p local6.notice -t events "$1 - event"
+/usr/bin/logger -p local6.notice -t events "$1 - event occurred"
 
 TRIGGERS=`ls /var/clearos/events/$1/ 2>/dev/null`
 
 for TRIGGER in $TRIGGERS; do
     if [ -x "/var/clearos/events/$1/$TRIGGER" ]; then
-        /usr/bin/logger -p local6.notice -t events "$1 - triggered $TRIGGER"
+        /usr/bin/logger -p local6.notice -t events "$1 - triggered hook: $TRIGGER"
         /var/clearos/events/$1/$TRIGGER
     fi
 done
