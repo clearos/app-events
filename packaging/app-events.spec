@@ -55,10 +55,8 @@ exit 0
 %files core
 %defattr(-,root,root)
 %exclude /usr/clearos/apps/events/packaging
-%exclude /usr/clearos/apps/events/tests
 %dir /usr/clearos/apps/events
 %dir /var/clearos/events
 /usr/clearos/apps/events/deploy
 /usr/clearos/apps/events/language
-/usr/clearos/apps/events/libraries
 /usr/sbin/trigger
