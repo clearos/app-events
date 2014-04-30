@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 $app['basename'] = 'events';
-$app['version'] = '1.4.20';
+$app['version'] = '1.6.0';
 $app['release'] = '1';
 $app['vendor'] = 'ClearFoundation';
 $app['packager'] = 'ClearFoundation';
@@ -28,6 +28,10 @@ $app['menu_enabled'] = FALSE;
 
 $app['core_only'] = TRUE;
 
+$app['core_obsoletes'] = array(
+    'app-clearsync-core',
+);
+
 $app['core_requires'] = array(
     'clearsync',
 );
@@ -37,6 +41,7 @@ $app['core_directory_manifest'] = array(
 );
 
 $app['core_file_manifest'] = array(
+    'clearsyncd.php'=> array('target' => '/var/clearos/base/daemon/clearsyncd.php'),
     'trigger' => array(
         'target' => '/usr/sbin/trigger',
         'mode' => '0755',

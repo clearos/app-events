@@ -1,7 +1,7 @@
 
 Name: app-events
 Epoch: 1
-Version: 1.4.20
+Version: 1.6.0
 Release: 1%{dist}
 Summary: Event System - Core
 License: LGPLv3
@@ -16,6 +16,7 @@ The Event System app provides a way for other apps to listen to events that occu
 Summary: Event System - Core
 Requires: app-base-core
 Requires: clearsync
+Obsoletes: app-clearsync-core
 
 %description core
 The Event System app provides a way for other apps to listen to events that occur on the system
@@ -31,6 +32,7 @@ mkdir -p -m 755 %{buildroot}/usr/clearos/apps/events
 cp -r * %{buildroot}/usr/clearos/apps/events/
 
 install -d -m 0755 %{buildroot}/var/clearos/events
+install -D -m 0644 packaging/clearsyncd.php %{buildroot}/var/clearos/base/daemon/clearsyncd.php
 install -D -m 0755 packaging/trigger %{buildroot}/usr/sbin/trigger
 
 %post core
@@ -59,4 +61,6 @@ exit 0
 %dir /var/clearos/events
 /usr/clearos/apps/events/deploy
 /usr/clearos/apps/events/language
+/usr/clearos/apps/events/libraries
+/var/clearos/base/daemon/clearsyncd.php
 /usr/sbin/trigger
