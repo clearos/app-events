@@ -1,7 +1,7 @@
 
 Name: app-events
 Epoch: 1
-Version: 1.6.0
+Version: 1.6.5
 Release: 1%{dist}
 Summary: Event System - Core
 License: LGPLv3
@@ -10,7 +10,7 @@ Source: app-events-%{version}.tar.gz
 Buildarch: noarch
 
 %description
-The Event System app provides a way for other apps to listen to events that occur on the system
+The Event System app provides a way for other apps to listen for events that occur on the system
 
 %package core
 Summary: Event System - Core
@@ -19,7 +19,7 @@ Requires: clearsync
 Obsoletes: app-clearsync-core
 
 %description core
-The Event System app provides a way for other apps to listen to events that occur on the system
+The Event System app provides a way for other apps to listen for events that occur on the system
 
 This package provides the core API and libraries.
 
