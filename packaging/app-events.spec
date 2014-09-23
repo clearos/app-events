@@ -32,7 +32,7 @@ mkdir -p -m 755 %{buildroot}/usr/clearos/apps/events
 cp -r * %{buildroot}/usr/clearos/apps/events/
 
 install -d -m 0755 %{buildroot}/var/clearos/events
-install -D -m 0644 packaging/clearsyncd.php %{buildroot}/var/clearos/base/daemon/clearsyncd.php
+install -D -m 0644 packaging/clearsync.php %{buildroot}/var/clearos/base/daemon/clearsync.php
 install -D -m 0755 packaging/trigger %{buildroot}/usr/sbin/trigger
 
 %post core
@@ -62,5 +62,5 @@ exit 0
 /usr/clearos/apps/events/deploy
 /usr/clearos/apps/events/language
 /usr/clearos/apps/events/libraries
-/var/clearos/base/daemon/clearsyncd.php
+/var/clearos/base/daemon/clearsync.php
 /usr/sbin/trigger

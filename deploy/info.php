@@ -41,7 +41,7 @@ $app['core_directory_manifest'] = array(
 );
 
 $app['core_file_manifest'] = array(
-    'clearsyncd.php'=> array('target' => '/var/clearos/base/daemon/clearsyncd.php'),
+    'clearsync.php'=> array('target' => '/var/clearos/base/daemon/clearsync.php'),
     'trigger' => array(
         'target' => '/usr/sbin/trigger',
         'mode' => '0755',
