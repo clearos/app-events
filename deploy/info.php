@@ -18,8 +18,8 @@ $app['description'] = lang('events_app_description');
 /////////////////////////////////////////////////////////////////////////////
 
 $app['name'] = lang('events_app_name');
-$app['category'] = lang('base_category_system');
-$app['subcategory'] = lang('base_subcategory_operating_system');
+$app['category'] = lang('base_category_reports');
+$app['subcategory'] = lang('base_subcategory_performance_and_resources');
 $app['menu_enabled'] = FALSE;
 
 /////////////////////////////////////////////////////////////////////////////
