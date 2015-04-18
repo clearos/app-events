@@ -24,13 +24,14 @@
 // N A M E S P A C E
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace clearos\apps\base;
+namespace clearos\apps\events;
 
 ///////////////////////////////////////////////////////////////////////////////
 // B O O T S T R A P
 ///////////////////////////////////////////////////////////////////////////////
 
-$bootstrap = getenv('CLEAROS_BOOTSTRAP') ? getenv('CLEAROS_BOOTSTRAP') : '/usr/clearos/framework/shared';
+$bootstrap = getenv('CLEAROS_BOOTSTRAP') ?
+	getenv('CLEAROS_BOOTSTRAP') : '/usr/clearos/framework/shared';
 require_once $bootstrap . '/bootstrap.php';
 
 class SSP {
@@ -60,6 +61,7 @@ class SSP {
 		}
 		return $out;
 	}
+
 	/**
 	 * Database connection
 	 *
@@ -80,6 +82,7 @@ class SSP {
 		}
 		return $conn;
 	}
+
 	/**
 	 * Paging
 	 *
@@ -97,6 +100,7 @@ class SSP {
 		}
 		return $limit;
 	}
+
 	/**
 	 * Ordering
 	 *
@@ -129,6 +133,7 @@ class SSP {
 		}
 		return $order;
 	}
+
 	/**
 	 * Searching / Filtering
 	 *
@@ -188,6 +193,7 @@ class SSP {
 		}
 		return $where;
 	}
+
 	/**
 	 * Perform the SQL queries needed for an server-side processing requested,
 	 * utilising the helper functions of this class, limit(), order() and
@@ -206,34 +212,44 @@ class SSP {
 	{
 		$bindings = array();
 		$db = self::db( $conn );
+
 		// Build the SQL query string from the request
 		$limit = self::limit( $request, $columns );
 		$order = self::order( $request, $columns );
 		$where = self::filter( $request, $columns, $bindings );
+
 		// Main query to actually get the data
-		$data = self::sql_exec( $db, $bindings,
-			"SELECT 337, `".implode("`, `", self::pluck($columns, 'db'))."`
+		$results = self::sql_exec( $db, $bindings,
+			"SELECT COUNT(`{$primaryKey}`)
+			 FROM `$table`
+			 $where"
+		);
+		$count = $results[0][0];
+
+		$results = self::sql_exec( $db, $bindings,
+			"SELECT `".implode("`, `", self::pluck($columns, 'db'))."`
 			 FROM `$table`
 			 $where
 			 $order
 			 $limit"
 		);
 
-		$resFilterLength = self::sql_exec( $db, $bindings,
-			"SELECT COUNT(`{$primaryKey}`) 
-			 FROM `$table`
-			 $where
-			 $order
-			 $limit"
-		);
-		$recordsFiltered = 327;
-		//$recordsFiltered = $resFilterLength[0][0];
+		$data = array();
+		foreach ($results as $row) {
+			array_unshift($row, $count);
+			$data[] = $row;
+		}
+
+		$recordsFiltered = $count;
+
 		// Total data set length
 		$resTotalLength = self::sql_exec( $db,
 			"SELECT COUNT(`{$primaryKey}`)
 			 FROM `$table`"
 		);
+
 		$recordsTotal = $resTotalLength[0][0];
+
 		/*
 		 * Output
 		 */
@@ -244,6 +260,7 @@ class SSP {
 			"data"            => self::data_output( $columns, $data )
 		);
 	}
+
 	/**
 	 * The difference between this method and the `simple` one, is that you can
 	 * apply additional `where` conditions to the SQL queries. These can be in
@@ -321,6 +338,7 @@ class SSP {
 			"data"            => self::data_output( $columns, $data )
 		);
 	}
+
 	/**
 	 * Connect to the database
 	 *
@@ -349,6 +367,7 @@ class SSP {
 		}
 		return $db;
 	}
+
 	/**
 	 * Execute an SQL query on the database
 	 *
@@ -384,6 +403,7 @@ class SSP {
 		// Return all
 		return $stmt->fetchAll();
 	}
+
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * Internal methods
 	 */
@@ -402,6 +422,7 @@ class SSP {
 		) );
 		exit(0);
 	}
+
 	/**
 	 * Create a PDO binding key which can be used for escaping variables safely
 	 * when executing a query with sql_exec()
@@ -422,6 +443,7 @@ class SSP {
 		);
 		return $key;
 	}
+
 	/**
 	 * Pull a particular property from each assoc. array in a numeric array, 
 	 * returning and array of the property values from each item.
@@ -438,6 +460,7 @@ class SSP {
 		}
 		return $out;
 	}
+
 	/**
 	 * Return a string from an array or a string
 	 *
