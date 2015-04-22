@@ -3,7 +3,7 @@
  * Server Side Processing for Datatables.
  *
  * @category   apps
- * @package    base
+ * @package    events
  * @subpackage libraries
  * @license    http://datatables.net/license_mit
 
@@ -30,8 +30,7 @@ namespace clearos\apps\events;
 // B O O T S T R A P
 ///////////////////////////////////////////////////////////////////////////////
 
-$bootstrap = getenv('CLEAROS_BOOTSTRAP') ?
-	getenv('CLEAROS_BOOTSTRAP') : '/usr/clearos/framework/shared';
+$bootstrap = getenv('CLEAROS_BOOTSTRAP') ? getenv('CLEAROS_BOOTSTRAP') : '/usr/clearos/framework/shared';
 require_once $bootstrap . '/bootstrap.php';
 
 class SSP {

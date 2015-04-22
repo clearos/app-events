@@ -6,18 +6,32 @@
  * @category   apps
  * @package    events
  * @subpackage javascript
- * @author     ClearCenter <developer@clearcenter.com>
- * @copyright  2015 ClearCenter
- * @license    http://www.clearcenter.com/app_license ClearCenter license
- * @link       http://www.clearcenter.com/events/documentation/clearos/events/
+ * @author     ClearFoundation <developer@clearfoundation.com>
+ * @copyright  2015 ClearFoundation
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU General Public License version 3 or later
+ * @link       http://www.clearfoundation.com/docs/developer/apps/events/
  */
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 
 ///////////////////////////////////////////////////////////////////////////////
 // B O O T S T R A P
 ///////////////////////////////////////////////////////////////////////////////
 
-$bootstrap = getenv('CLEAROS_BOOTSTRAP') ?
-	getenv('CLEAROS_BOOTSTRAP') : '/usr/clearos/framework/shared';
+$bootstrap = getenv('CLEAROS_BOOTSTRAP') ? getenv('CLEAROS_BOOTSTRAP') : '/usr/clearos/framework/shared';
 require_once $bootstrap . '/bootstrap.php';
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -37,9 +51,6 @@ header('Content-Type: application/x-javascript');
 var lang_error = '<?php echo lang('base_error'); ?>';
 
 $(document).ready(function() {
-    $('#example').dataTable( {
-        "processing": true,
-        "serverSide": true,
-        "ajax": "/app/events/get_info"
-    } );
-} );
+});
+
+// vim: syntax=javascript ts=4

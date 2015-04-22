@@ -7,7 +7,7 @@
  * @package    events
  * @subpackage views
  * @author     ClearFoundation <developer@clearfoundation.com>
- * @copyright  2011 ClearFoundation
+ * @copyright  2015 ClearFoundation
  * @license    http://www.gnu.org/copyleft/gpl.html GNU General Public License version 3 or later
  * @link       http://www.clearfoundation.com/docs/developer/apps/events/
  */
@@ -35,23 +35,36 @@
 
 $this->lang->load('base');
 
-echo "<table id='example' class='display table table-striped' cellspacing='0' width='100%'>
-        <thead>
-            <tr>
-                <th>Description</th>
-                <th>Type</th>
-                <th>User ID</th>
-                <th>Timestamp</th>
-            </tr>
-        </thead>
- 
-        <tfoot>
-            <tr>
-                <th>Description</th>
-                <th>Type</th>
-                <th>User ID</th>
-                <th>Timestamp</th>
-            </tr>
-        </tfoot>
-    </table>
-";
+///////////////////////////////////////////////////////////////////////////////
+// Anchors
+///////////////////////////////////////////////////////////////////////////////
+
+$anchors = array(anchor_custom('/app/events/satellites/admin', lang('events_admin')));
+
+///////////////////////////////////////////////////////////////////////////////
+// Headers
+///////////////////////////////////////////////////////////////////////////////
+
+$headers = array(
+    lang('events_severity'),
+    lang('base_description'),
+    lang('base_timestamp')
+);
+
+///////////////////////////////////////////////////////////////////////////////
+// Summary table
+///////////////////////////////////////////////////////////////////////////////
+
+$options = array(
+    'id' => 'events_list',
+    'ajax' => '/app/events/get_info',
+    //'responsive' => array(3 => 'none', 4 => 'none')
+);
+
+echo summary_table(
+    lang('events_events'),
+    $anchors,
+    $headers,
+    NULL,
+    $options
+);
