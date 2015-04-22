@@ -46,8 +46,9 @@ $anchors = array(anchor_custom('/app/events/satellites/admin', lang('events_admi
 ///////////////////////////////////////////////////////////////////////////////
 
 $headers = array(
-    lang('events_severity'),
+    '',
     lang('base_description'),
+    lang('events_type'),
     lang('base_timestamp')
 );
 

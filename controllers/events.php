@@ -97,22 +97,32 @@ class Events extends ClearOS_Controller
             $this->load->library('events/SSP');
 
             $sql_details = array(
-		'path' => '/var/lib/csplugin-sysmon/sysmon.db'
-	    );
-	    $table = 'alerts';
+                'path' => '/var/lib/csplugin-sysmon/sysmon.db'
+            );
+            $table = 'alerts';
             $primaryKey = 'id';
             $columns = array(
-		array( 'db' => 'desc', 'dt' => 0 ),
-		array( 'db' => 'type',  'dt' => 1 ),
-		array( 'db' => 'user',  'dt' => 2 ),
-		array( 'db' => 'stamp',  'dt' => 3,
-		'formatter' => function( $d, $row ) {
-		    return date( 'jS M y', strftime($d));
-		}
-		),
+                array( 'db' => 'flags', 'dt' => 0,
+                    'formatter' => function( $d, $row ) {
+                        return "<i class='fa fa-gears'></i>";
+                    }
+                ),
+                array( 'db' => 'desc', 'dt' => 1 ),
+                array( 'db' => 'type',  'dt' => 2 ),
+                array( 'db' => 'stamp',  'dt' => 3,
+                    'formatter' => function( $d, $row ) {
+                        return date( 'M y', strftime($d));
+                    }
+                ),
+                array( 'db' => 'type',  'dt' => 4,
+                    'formatter' => function( $d, $row ) {
+                        return anchor_add('/obb');
+                    }
+                )
             );
-                //SSP::simple( $_GET, $sql_details, $table, $primaryKey, $columns )
-		parse_str($_SERVER['QUERY_STRING'], $get_params);
+
+            parse_str($_SERVER['QUERY_STRING'], $get_params);
+
             echo json_encode(
                 SSP::simple($get_params, $sql_details, $table, $primaryKey, $columns )
             );
