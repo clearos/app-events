@@ -96,6 +96,7 @@ class Events extends ClearOS_Controller
             $this->load->library('events/Events');
             $this->load->library('events/SSP');
 
+
             $sql_details = array(
                 'path' => '/var/lib/csplugin-sysmon/sysmon.db'
             );
@@ -104,19 +105,20 @@ class Events extends ClearOS_Controller
             $columns = array(
                 array( 'db' => 'flags', 'dt' => 0,
                     'formatter' => function( $d, $row ) {
-                        return "<i class='fa fa-gears'></i>";
+                        $icons = array(
+                            '0' => icon('unknown'),
+                            '1' => icon('info', array('class' => 'theme-text-ok')),
+                            '2' => icon('warning', array('class' => 'theme-text-warning')),
+                            '4' => icon('critical', array('class' => 'theme-text-alert')),
+                        );
+                        return $icons[(int)$d];
                     }
                 ),
                 array( 'db' => 'desc', 'dt' => 1 ),
                 array( 'db' => 'type',  'dt' => 2 ),
                 array( 'db' => 'stamp',  'dt' => 3,
                     'formatter' => function( $d, $row ) {
-                        return date( 'M y', strftime($d));
-                    }
-                ),
-                array( 'db' => 'type',  'dt' => 4,
-                    'formatter' => function( $d, $row ) {
-                        return anchor_add('/obb');
+                        return date( 'Y-m-d H:i:s', strftime($d));
                     }
                 )
             );

@@ -39,7 +39,7 @@ $this->lang->load('base');
 // Anchors
 ///////////////////////////////////////////////////////////////////////////////
 
-$anchors = array(anchor_custom('/app/events/satellites/admin', lang('events_admin')));
+$anchors = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Headers
@@ -59,7 +59,7 @@ $headers = array(
 $options = array(
     'id' => 'events_list',
     'ajax' => '/app/events/get_info',
-    //'responsive' => array(3 => 'none', 4 => 'none')
+    'no_action' => TRUE
 );
 
 echo summary_table(

@@ -51,6 +51,10 @@ header('Content-Type: application/x-javascript');
 var lang_error = '<?php echo lang('base_error'); ?>';
 
 $(document).ready(function() {
+  $('#events_list').on('draw.dt', function () {
+    // Hack..FIXME...aligns icons up to look a bit better
+    $('#events_list tr td:first-child').css('padding', '8px 0px 8px 15px');
+  });
 });
 
 // vim: syntax=javascript ts=4
