@@ -76,7 +76,10 @@ class Events extends ClearOS_Controller
         //---------------
         $data = array();
 
-        $this->page->view_form('events/summary', $data, lang('events_app_name'));
+        $options['breadcrumb_links'] = array(
+            'settings' => array('url' => '/app/events/settings', 'tag' => lang('base_settings'))
+        );
+        $this->page->view_form('events/summary', $data, lang('events_app_name'), $options);
     }
 
     /**

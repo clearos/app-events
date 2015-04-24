@@ -118,17 +118,25 @@ class Events extends Engine
     }
 
     /**
-     * Get events info.
+     * Get auto purge threshold options.
      *
-     *
-     * @return Object JSON-encoded response
-     * @throws Webservice_Exception
+     * @return array
+     * @throws Engine_Exception
      */
 
-    public function get_data()
+    function get_autopurge_options()
     {
         clearos_profile(__METHOD__, __LINE__);
 
+        $options = array (
+            10 => lang('events_older_than_1_day'),
+            20 => lang('events_older_than_1_week'),
+            30 => lang('events_older_than_1_month'),
+            40 => lang('events_older_than_3_months'),
+            50 => lang('events_older_than_6_months'),
+            60 => lang('events_older_than_1_year')
+        );
+        return $options;
     }
 
     ///////////////////////////////////////////////////////////////////////////////

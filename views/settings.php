@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Javascript helper for Events.
+ * Events manager setting view.
  *
  * @category   apps
  * @package    events
- * @subpackage javascript
+ * @subpackage views
  * @author     ClearFoundation <developer@clearfoundation.com>
  * @copyright  2015 ClearFoundation
  * @license    http://www.gnu.org/copyleft/gpl.html GNU General Public License version 3 or later
@@ -26,41 +26,48 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.  
-
-///////////////////////////////////////////////////////////////////////////////
-// B O O T S T R A P
+//  
 ///////////////////////////////////////////////////////////////////////////////
 
-$bootstrap = getenv('CLEAROS_BOOTSTRAP') ? getenv('CLEAROS_BOOTSTRAP') : '/usr/clearos/framework/shared';
-require_once $bootstrap . '/bootstrap.php';
-
 ///////////////////////////////////////////////////////////////////////////////
-// T R A N S L A T I O N S
+// Load dependencies
 ///////////////////////////////////////////////////////////////////////////////
 
-clearos_load_language('events');
-clearos_load_language('base');
+$this->lang->load('base');
+$this->lang->load('events');
 
 ///////////////////////////////////////////////////////////////////////////////
-// J A V A S C R I P T
+// Form open
 ///////////////////////////////////////////////////////////////////////////////
 
-header('Content-Type: application/x-javascript');
+echo form_open('events/settings');
+echo form_header(lang('base_settings'));
 
-?>
-var lang_error = '<?php echo lang('base_error'); ?>';
-var lang_show_info = '<?php echo lang('events_show_info'); ?>';
-var lang_show_warning = '<?php echo lang('events_show_warning'); ?>';
-var lang_show_critical = '<?php echo lang('events_show_critical'); ?>';
+///////////////////////////////////////////////////////////////////////////////
+// Form fields and buttons
+///////////////////////////////////////////////////////////////////////////////
 
-$(document).ready(function() {
-  $('#events_list').on('draw.dt', function () {
-    // Hack..FIXME...aligns icons up to look a bit better
-    $('#events_list tr td:first-child').css('padding', '8px 0px 8px 15px');
-  });
-  clearos_add_sidebar_pair(lang_show_critical, '<input type="checkbox" id="events-critical" name="severity_critical" class="severity_select" />');
-  clearos_add_sidebar_pair(lang_show_warning, '<input type="checkbox" id="events-warning" name="severity_warning" class="severity_select" />');
-  clearos_add_sidebar_pair(lang_show_info, '<input type="checkbox" id="events-info" name="severity_info" class="severity_select" />');
-});
+$read_only = FALSE;
+$buttons = array(
+    form_submit_update('submit'),
+    anchor_cancel('/app/events')
+);
 
-// vim: syntax=javascript ts=4
+echo fieldset_header(lang('events_general_settings'));
+
+echo field_toggle_enable_disable('status', $status, lang('events_status'), $read_only);
+echo field_dropdown('autopurge', $autopurge_options, $autopurge, lang('events_autopurge'), $read_only);
+
+echo fieldset_header(lang('events_notifications'));
+echo field_toggle_enable_disable('email_notifications', $email_notifications, lang('events_email_notifications'), $read_only);
+echo field_checkbox('critical', $critical, lang('events_send_critical_events_immediately'), $read_only);
+echo field_textarea('email', implode("\n", $email), lang('events_email'), $read_only);
+
+echo field_button_set($buttons);
+
+///////////////////////////////////////////////////////////////////////////////
+// Form close
+///////////////////////////////////////////////////////////////////////////////
+
+echo form_footer();
+echo form_close();
