@@ -97,6 +97,12 @@ class Events extends Engine
     // C O N S T A N T S
     ///////////////////////////////////////////////////////////////////////////////
 
+    const DB_CONN = '/var/lib/csplugin-sysmon/sysmon.db';
+    const FLAG_INFO = 1;
+    const FLAG_WARN = 2;
+    const FLAG_CRIT = 4;
+    const FLAG_ALL = 65535;
+
     ///////////////////////////////////////////////////////////////////////////////
     // V A R I A B L E S
     ///////////////////////////////////////////////////////////////////////////////
@@ -139,6 +145,65 @@ class Events extends Engine
         return $options;
     }
 
+    /**
+     * Get events.
+     *
+     *
+     * @param int $filter filter for flags
+     * @param int $limit  limit number of records returned
+     *
+     * @return array
+     * @throws Engine_Exception
+     */
+
+    function get_events($filter = self::FLAG_ALL, $limit = 0)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        $this->_get_db_handle();
+
+        $result = array();
+
+        // Run query
+        //----------
+
+        $where = '';
+        if ($filter != self::FLAG_ALL) {
+            $flags_filter = array();
+            if ($filter & self::FLAG_INFO)
+                $flags_filter[] = 'flags & ' . self::FLAG_INFO;
+            if ($filter & self::FLAG_WARN)
+                $flags_filter[] = 'flags & ' . self::FLAG_WARN;
+            if ($filter & self::FLAG_CRIT)
+                $flags_filter[] = 'flags & ' . self::FLAG_CRIT;
+			$where = ' WHERE ('. implode(' OR ', $flags_filter) . ')';
+        }
+        if ($limit == 0)
+            $limit = '';
+        else
+            $limit = " LIMIT $limit";
+
+        $sql = 'SELECT * FROM alerts' . $where . $limit;
+
+        try {
+            $dbs = $this->db_handle->prepare($sql);
+            $dbs->execute();
+
+            $result['events'] = $dbs->fetchAll(\PDO::FETCH_ASSOC);
+
+            $sql = 'SELECT count(id) AS total FROM alerts' . $where;
+            $dbs = $this->db_handle->prepare($sql);
+            $dbs->execute();
+
+            $result['total'] = $dbs->fetch()[0];
+
+        } catch(\Exception $e) {
+            throw new Engine_Exception($e->getMessage());
+        }
+
+        return $result;
+    }
+
     ///////////////////////////////////////////////////////////////////////////////
     // P R I V A T E    R O U T I N E S
     ///////////////////////////////////////////////////////////////////////////////
@@ -156,7 +221,7 @@ class Events extends Engine
 
         $configfile = new Configuration_File(self::FILE_CONFIG);
 
-        $this->config = $configfile->Load();
+        $this->config = $configfile->load();
 
         $this->is_loaded = TRUE;
     }
@@ -186,6 +251,33 @@ class Events extends Engine
         }
 
         $this->is_loaded = FALSE;
+    }
+
+    /**
+     * Creates a db handle.
+     *
+     * @return void
+     */
+
+    protected function _get_db_handle()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if (! is_null($this->db_handle))
+            return;
+
+        // Get a connection
+        //-----------------
+
+        try {
+			$this->db_handle = new \PDO(
+				"sqlite:" . self::DB_CONN,
+				NULL, NULL,
+				array( \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION )
+			);
+        } catch(\PDOException $e) {
+            throw new Engine_Exception($e->getMessage());
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////
