@@ -187,6 +187,18 @@ class SSP {
 				implode(' AND ', $columnSearch) :
 				$where .' AND '. implode(' AND ', $columnSearch);
 		}
+		if ( isset($request['flags']) ) {
+            $flags_filter = array();
+            if ($request['flags'] & 1)
+                $flags_filter[] = 'flags & 1';
+            if ($request['flags'] & 2)
+                $flags_filter[] = 'flags & 2';
+            if ($request['flags'] & 4)
+                $flags_filter[] = 'flags & 4';
+			$where = $where === '' ?
+				implode(' OR ', $flags_filter) :
+				$where .' AND ('. implode(' OR ', $flags_filter) . ')';
+        }
 		if ( $where !== '' ) {
 			$where = 'WHERE '.$where;
 		}

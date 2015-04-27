@@ -54,13 +54,57 @@ var lang_show_warning = '<?php echo lang('events_show_warning'); ?>';
 var lang_show_critical = '<?php echo lang('events_show_critical'); ?>';
 
 $(document).ready(function() {
-  $('#events_list').on('draw.dt', function () {
-    // Hack..FIXME...aligns icons up to look a bit better
-    $('#events_list tr td:first-child').css('padding', '8px 0px 8px 15px');
-  });
-  clearos_add_sidebar_pair(lang_show_critical, '<input type="checkbox" id="events-critical" name="severity_critical" class="severity_select" />');
-  clearos_add_sidebar_pair(lang_show_warning, '<input type="checkbox" id="events-warning" name="severity_warning" class="severity_select" />');
-  clearos_add_sidebar_pair(lang_show_info, '<input type="checkbox" id="events-info" name="severity_info" class="severity_select" />');
+    $('#events_list').on('draw.dt', function () {
+        // Hack..FIXME...aligns icons up to look a bit better
+        $('#events_list tr td:first-child').css('padding', '8px 0px 8px 15px');
+    });
+    var flags = $('#flags').val();
+    // Critical
+    if (flags & 4)
+        checked = 'checked';
+    else
+        checked = '';
+    clearos_add_sidebar_pair(lang_show_critical, '<input type="checkbox" name="flags_critical" value="4" class="flags_select" ' + checked + '/>');
+    // Warning 
+    if (flags & 2)
+        checked = 'checked';
+    else
+        checked = '';
+    clearos_add_sidebar_pair(lang_show_warning, '<input type="checkbox" name="flags_warning" value="2" class="flags_select" ' + checked + '/>');
+    // Info 
+    if (flags & 1)
+        checked = 'checked';
+    else
+        checked = '';
+    clearos_add_sidebar_pair(lang_show_info, '<input type="checkbox" name="flags_info" value="1" class="flags_select" ' + checked + '/>');
+    $('.flags_select').on('click', function () {
+        set_flags();
+    });
 });
+
+function set_flags() {
+    var flags = 0;
+    $('.flags_select').each(function(index) {
+        if ($(this).prop('checked'))
+            flags += parseInt($(this).val());
+    });
+    $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        url: '/app/events/flags/' + flags,
+        success: function(json) {
+            if (json.code == 0) {
+                // Redraw the table
+                var events = get_table_events_list();
+                events.fnDraw();
+            } else {
+                clearos_dialog_box('error', lang_warning, json.errmsg);
+            }
+        },
+        error: function(xhr, text, err) {
+            clearos_dialog_box('error', lang_warning, xhr.responseText.toString());
+        }
+    });
+}
 
 // vim: syntax=javascript ts=4

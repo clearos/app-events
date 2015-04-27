@@ -69,3 +69,4 @@ echo summary_table(
     NULL,
     $options
 );
+echo "<input type='hidden' id='flags' class='theme-hidden' value='$flags' />";

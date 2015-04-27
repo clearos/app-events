@@ -76,10 +76,39 @@ class Events extends ClearOS_Controller
         //---------------
         $data = array();
 
+        $data['flags'] = 7;  // Default all severity levels (1, 2 and 4 bits)
+        if ($this->session->userdata('events_flags') !== FALSE)
+            $data['flags'] = $this->session->userdata('events_flags');
         $options['breadcrumb_links'] = array(
             'settings' => array('url' => '/app/events/settings', 'tag' => lang('base_settings'))
         );
         $this->page->view_form('events/summary', $data, lang('events_app_name'), $options);
+    }
+
+    /**
+     * Ajax set flags filter
+     *
+     * @return JSON
+     */
+
+    function flags($filter = NULL)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        header('Cache-Control: no-cache, must-revalidate');
+        header('Content-type: application/json');
+
+        try {
+
+            $flags = 7;  // Default all severity levels (1, 2 and 4 bits)
+            if ($filter != NULL)
+                $flags = $filter;
+            $this->session->set_userdata('events_flags', $flags);
+
+            echo json_encode(array('code' => 0));
+        } catch (Exception $e) {
+            echo json_encode(Array('code' => clearos_exception_code($e), 'errmsg' => clearos_exception_message($e)));
+        }
     }
 
     /**
@@ -128,8 +157,13 @@ class Events extends ClearOS_Controller
 
             parse_str($_SERVER['QUERY_STRING'], $get_params);
 
+            if ($this->session->userdata('events_flags') !== FALSE)
+                $get_params['flags'] = $this->session->userdata('events_flags');
+            else
+                $get_params['flags'] = 7;
+                
             echo json_encode(
-                SSP::simple($get_params, $sql_details, $table, $primaryKey, $columns )
+                SSP::simple($get_params, $sql_details, $table, $primaryKey, $columns)
             );
 
         } catch (Exception $e) {
