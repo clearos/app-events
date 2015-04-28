@@ -54,4 +54,12 @@ $app['core_file_manifest'] = array(
         'owner' => 'root',
         'group' => 'root',
     ),
+    'events.conf' => array(
+        'target' => '/etc/clearos/events.conf',
+        'mode' => '0644',
+        'owner' => 'webconfig',
+        'group' => 'webconfig',
+        'config' => TRUE,
+        'config_params' => 'noreplace',
+    )
 );

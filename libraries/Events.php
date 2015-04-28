@@ -98,6 +98,7 @@ class Events extends Engine
     ///////////////////////////////////////////////////////////////////////////////
 
     const DB_CONN = '/var/lib/csplugin-sysmon/sysmon.db';
+    const FILE_CONFIG = '/etc/clearos/events.conf';
     const FLAG_INFO = 1;
     const FLAG_WARN = 2;
     const FLAG_CRIT = 4;
@@ -121,6 +122,314 @@ class Events extends Engine
     function __construct()
     {
         clearos_profile(__METHOD__, __LINE__);
+    }
+
+    /**
+     * Set the status of the monitor.
+     *
+     * @param boolean $status live monitoring status
+     *
+     * @return void
+     * @throws Validation_Exception
+     */
+
+    function set_status($status)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        Validation_Exception::is_valid($this->validate_status($status));
+
+        $this->_set_parameter('status', $status);
+    }
+
+    /**
+     * Set the autopurge time.
+     *
+     * @param int $autopurge autopurge
+     *
+     * @return void
+     * @throws Validation_Exception
+     */
+
+    function set_autopurge($autopurge)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        Validation_Exception::is_valid($this->validate_autopurge($autopurge));
+
+        $this->_set_parameter('autopurge', $autopurge);
+    }
+
+    /**
+     * Set the status of the instant notifiation email.
+     *
+     * @param boolean $status instant notifications via email
+     *
+     * @return void
+     * @throws Validation_Exception
+     */
+
+    function set_instant_status($status)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        Validation_Exception::is_valid($this->validate_status($status));
+
+        $this->_set_parameter('instant_status', $status);
+    }
+
+    /**
+     * Set the instant threshold.
+     *
+     * @param bool $info info
+     * @param bool $warn warning
+     * @param bool $crit critical
+     *
+     * @return void
+     * @throws Validation_Exception
+     */
+
+    function set_instant_threshold($info, $warn, $crit)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        Validation_Exception::is_valid($this->validate_threshold($info));
+        Validation_Exception::is_valid($this->validate_threshold($warn));
+        Validation_Exception::is_valid($this->validate_threshold($crit));
+
+        $value = 0;
+        if ($info)
+            $value += self::FLAG_INFO;
+        if ($warn)
+            $value += self::FLAG_WARN;
+        if ($crit)
+            $value += self::FLAG_CRIT;
+
+        $this->_set_parameter('instant_threshold', $value);
+    }
+
+    /**
+     * Set the instant email.
+     *
+     * @param int $email email address for instant notifications
+     *
+     * @return void
+     * @throws Validation_Exception
+     */
+
+    function set_instant_email($email)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        Validation_Exception::is_valid($this->validate_email($email));
+
+        $this->_set_parameter('instant_email', preg_replace("/\n/",",", $email));
+    }
+
+    /**
+     * Set the status of the daily notifiation email.
+     *
+     * @param boolean $status daily notifications via email
+     *
+     * @return void
+     * @throws Validation_Exception
+     */
+
+    function set_daily_status($status)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        Validation_Exception::is_valid($this->validate_status($status));
+
+        $this->_set_parameter('daily_status', $status);
+    }
+
+    /**
+     * Set the daily threshold.
+     *
+     * @param bool $info info
+     * @param bool $warn warning
+     * @param bool $crit critical
+     *
+     * @return void
+     * @throws Validation_Exception
+     */
+
+    function set_daily_threshold($info, $warn, $crit)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        Validation_Exception::is_valid($this->validate_threshold($info));
+        Validation_Exception::is_valid($this->validate_threshold($warn));
+        Validation_Exception::is_valid($this->validate_threshold($crit));
+
+        $value = 0;
+        if ($info)
+            $value += self::FLAG_INFO;
+        if ($warn)
+            $value += self::FLAG_WARN;
+        if ($crit)
+            $value += self::FLAG_CRIT;
+
+        $this->_set_parameter('daily_threshold', $value);
+    }
+
+    /**
+     * Set the daily email.
+     *
+     * @param int $email email address for daily notifications
+     *
+     * @return void
+     * @throws Validation_Exception
+     */
+
+    function set_daily_email($email)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        Validation_Exception::is_valid($this->validate_email($email));
+
+        $this->_set_parameter('daily_email', preg_replace("/\n/",",", $email));
+    }
+
+    /**
+     * Get the monitoring status.
+     *
+     * @return boolean
+     */
+
+    function get_status()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if (!$this->is_loaded)
+            $this->_load_config();
+
+        return $this->config['status'];
+    }
+
+    /**
+     * Get the monitoring autopurge.
+     *
+     * @return boolean
+     */
+
+    function get_autopurge()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if (!$this->is_loaded)
+            $this->_load_config();
+
+        return $this->config['autopurge'];
+    }
+
+    /**
+     * Get the instant notification status.
+     *
+     * @return boolean
+     */
+
+    function get_instant_status()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if (!$this->is_loaded)
+            $this->_load_config();
+
+        return $this->config['instant_status'];
+    }
+
+    /**
+     * Get the instant notification threshold.
+     *
+     * @return array
+     */
+
+    function get_instant_threshold()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if (!$this->is_loaded)
+            $this->_load_config();
+
+        $threshold = array(
+            ($this->config['instant_threshold'] & self::FLAG_INFO),
+            ($this->config['instant_threshold'] & self::FLAG_WARN),
+            ($this->config['instant_threshold'] & self::FLAG_CRIT),
+        );
+
+        return $threshold;
+    }
+
+    /**
+     * Get the instant email notification.
+     *
+     * @return string
+     */
+
+    function get_instant_email()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if (!$this->is_loaded)
+            $this->_load_config();
+
+        return explode(',', $this->config['instant_email']);
+    }
+
+    /**
+     * Get the daily notification status.
+     *
+     * @return boolean
+     */
+
+    function get_daily_status()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if (!$this->is_loaded)
+            $this->_load_config();
+
+        return $this->config['daily_status'];
+    }
+
+    /**
+     * Get the daily notification threshold.
+     *
+     * @return array
+     */
+
+    function get_daily_threshold()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if (!$this->is_loaded)
+            $this->_load_config();
+
+        $threshold = array(
+            ($this->config['daily_threshold'] & self::FLAG_INFO),
+            ($this->config['daily_threshold'] & self::FLAG_WARN),
+            ($this->config['daily_threshold'] & self::FLAG_CRIT),
+        );
+
+        return $threshold;
+    }
+
+    /**
+     * Get the daily email notification.
+     *
+     * @return string
+     */
+
+    function get_daily_email()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if (!$this->is_loaded)
+            $this->_load_config();
+
+        return explode(',', $this->config['daily_email']);
     }
 
     /**
@@ -283,5 +592,92 @@ class Events extends Engine
     ///////////////////////////////////////////////////////////////////////////////
     // V A L I D A T I O N   R O U T I N E S
     ///////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Validation routine for status.
+     *
+     * @param boolean $status status
+     *
+     * @return mixed void if status is valid, errmsg otherwise
+     */
+
+    public function validate_status($status)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+    }
+
+    /**
+     * Validation routine for autopurge.
+     *
+     * @param boolean $autopurge autopurge
+     *
+     * @return mixed void if autopurge is valid, errmsg otherwise
+     */
+
+    public function validate_autopurge($autopurge)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+        $list = $this->get_autopurge_options();
+        if (!array_key_exists($autopurge, $list))
+            return lang('events_autopurge')  . ' - ' . lang('base_invalid');
+    }
+
+    /**
+     * Validation routine for instant status notifications.
+     *
+     * @param boolean $instant instant notifications
+     *
+     * @return mixed void if instant is valid, errmsg otherwise
+     */
+
+    public function validate_instant_status($instant)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+    }
+
+    /**
+     * Validation routine for daily status notifications.
+     *
+     * @param boolean $daily daily notifications
+     *
+     * @return mixed void if daily is valid, errmsg otherwise
+     */
+
+    public function validate_daily_status($daily)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+    }
+
+    /**
+     * Validation routine for threshold.
+     *
+     * @param boolean $threshold threshold
+     *
+     * @return mixed void if threshold is valid, errmsg otherwise
+     */
+
+    public function validate_threshold($threshold)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+    }
+
+    /**
+     * Validation routine for email.
+     *
+     * @param array $email email array
+     *
+     * @return mixed void if email is valid, errmsg otherwise
+     */
+
+    public function validate_email($email)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        $emails = explode("\n", $email);
+        foreach ($emails as $email) {
+            if (!preg_match("/^([a-zA-Z0-9])+([a-zA-Z0-9\._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/", $email))
+                return lang('base_email_address_invalid');
+        }
+    }
 
 }

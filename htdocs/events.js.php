@@ -80,6 +80,11 @@ $(document).ready(function() {
     $('.flags_select').on('click', function () {
         set_flags();
     });
+
+    toggle_fields();
+    $('.form-control').on('change', function () {
+        toggle_fields();
+    });
 });
 
 function set_flags() {
@@ -105,6 +110,28 @@ function set_flags() {
             clearos_dialog_box('error', lang_warning, xhr.responseText.toString());
         }
     });
+}
+
+function toggle_fields() {
+    if ($('#status').val() == 1) {
+        $('.status-required').attr('disabled', false);
+        if ($('#instant_status').val() == 1) {
+            $('.instant-required').attr('disabled', false);
+        } else {
+            $('.instant-required').attr('disabled', true);
+            $('.instant-required').attr('checked', false);
+            $('.instant-required').val('');
+        }
+        if ($('#daily_status').val() == 1) {
+            $('.daily-required').attr('disabled', false);
+        } else {
+            $('.daily-required').attr('disabled', true);
+            $('.daily-required').attr('checked', false);
+            $('.daily-required').val('');
+        }
+    } else {
+        $('.status-required').attr('disabled', true);
+    }
 }
 
 // vim: syntax=javascript ts=4

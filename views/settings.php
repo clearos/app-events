@@ -56,20 +56,20 @@ $buttons = array(
 echo fieldset_header(lang('events_general_settings'));
 
 echo field_toggle_enable_disable('status', $status, lang('events_monitoring_status'), $read_only);
-echo field_dropdown('autopurge', $autopurge_options, $autopurge, lang('events_autopurge'), $read_only);
+echo field_dropdown('autopurge', $autopurge_options, $autopurge, lang('events_autopurge'), $read_only, array('class' => array('status-required')));
 
 echo fieldset_header(lang('events_instant_notifications'));
-echo field_toggle_enable_disable('alert_notifications', $alert_notifications, lang('base_status'), $read_only);
-echo field_checkbox('instant_warning', $instant_warning, lang('events_warning'), $read_only);
-echo field_checkbox('instant_critical', $instant_critical, lang('events_critical'), $read_only);
-echo field_textarea('instant_email', implode("\n", $instant_email), lang('events_email'), $read_only);
+echo field_toggle_enable_disable('instant_status', $instant_status, lang('base_status'), $read_only, array('class' => array('status-required')));
+echo field_checkbox('instant_warning', $instant_warning, lang('events_warning'), $read_only, array('class' => array('status-required', 'instant-required')));
+echo field_checkbox('instant_critical', $instant_critical, lang('events_critical'), $read_only, array('class' => array('status-required', 'instant-required')));
+echo field_textarea('instant_email', implode("\n", $instant_email), lang('events_email'), $read_only, array('class' => array('status-required', 'instant-required')));
 
 echo fieldset_header(lang('events_daily_event_summary'));
-echo field_toggle_enable_disable('daily_notifications', $daily_notifications, lang('base_status'), $read_only);
-echo field_checkbox('daily_info', $daily_info, lang('events_info'), $read_only);
-echo field_checkbox('daily_warning', $daily_warning, lang('events_warning'), $read_only);
-echo field_checkbox('daily_critical', $daily_critical, lang('events_critical'), $read_only);
-echo field_textarea('instant_email', implode("\n", $instant_email), lang('events_email'), $read_only);
+echo field_toggle_enable_disable('daily_status', $daily_status, lang('base_status'), $read_only, array('class' => array('status-required')));
+echo field_checkbox('daily_info', $daily_info, lang('events_info'), $read_only, array('class' => array('status-required', 'daily-required')));
+echo field_checkbox('daily_warning', $daily_warning, lang('events_warning'), $read_only, array('class' => array('status-required', 'daily-required')));
+echo field_checkbox('daily_critical', $daily_critical, lang('events_critical'), $read_only, array('class' => array('status-required', 'daily-required')));
+echo field_textarea('daily_email', implode("\n", $daily_email), lang('events_email'), $read_only, array('class' => array('status-required', 'daily-required')));
 echo field_button_set($buttons);
 
 ///////////////////////////////////////////////////////////////////////////////
