@@ -58,6 +58,8 @@ $headers = array(
 
 $options = array(
     'id' => 'events_list',
+    'sort-default-col' => 3,
+    'sort-default-dir' => 'descending',
     'ajax' => '/app/events/get_info',
     'no_action' => TRUE
 );
@@ -69,4 +71,6 @@ echo summary_table(
     NULL,
     $options
 );
+
+// Used for flag selectors in JS
 echo "<input type='hidden' id='flags' class='theme-hidden' value='$flags' />";

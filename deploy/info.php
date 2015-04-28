@@ -21,6 +21,13 @@ $app['name'] = lang('events_app_name');
 $app['category'] = lang('base_category_reports');
 $app['subcategory'] = lang('base_subcategory_performance_and_resources');
 
+$app['tooltip'] = array(
+    lang('events_tooltip_severity'),
+    lang('events_tooltip_info'),
+    lang('events_tooltip_warning'),
+    lang('events_tooltip_critical'),
+);
+
 /////////////////////////////////////////////////////////////////////////////
 // Packaging
 /////////////////////////////////////////////////////////////////////////////

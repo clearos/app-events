@@ -98,6 +98,9 @@ class Settings extends ClearOS_Controller
         }
 
         $data['autopurge_options'] = $this->events->get_autopurge_options();
+        $data['flags'] = 7;  // Default all severity levels (1, 2 and 4 bits)
+        if ($this->session->userdata('events_flags') !== FALSE)
+            $data['flags'] = $this->session->userdata('events_flags');
         $this->page->view_form('events/settings', $data, lang('base_settings'));
 	}
 }

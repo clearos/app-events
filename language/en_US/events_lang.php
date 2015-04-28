@@ -1,16 +1,19 @@
 <?php
 
-$lang['events_app_description'] = 'The Event System app provides a way for other apps to listen for events that occur on the system';
+$lang['events_app_description'] = 'The Events and Notifications app provides a way for other apps to listen for events that occur on the system.  You can view them here and/or configure bulk reports or notifications to be sent to you via email.';
 $lang['events_app_name'] = 'Events and Notifications';
 $lang['events_events'] = 'Events';
 $lang['events_severity'] = 'Severity';
 $lang['events_type'] = 'Type';
 $lang['events_general_settings'] = 'General Settings';
-$lang['events_notifications'] = 'Notifications';
+$lang['events_instant_notifications'] = 'Instant Notifications';
+$lang['events_daily_event_summary'] = 'Daily Event Summary';
 $lang['events_autopurge'] = 'Auto-Purge';
-$lang['events_status'] = 'Event Status';
+$lang['events_monitoring_status'] = 'Event Monitoring Status';
 $lang['events_email_notifications'] = 'Email Notifications';
-$lang['events_send_critical_events_immediately'] = 'Send Critical Immediately';
+$lang['events_info'] = 'Informational Events';
+$lang['events_warning'] = 'Warning Events';
+$lang['events_critical'] = 'Critical Events';
 $lang['events_email'] = 'Email to Notify (one per line)';
 $lang['events_older_than_1_day'] = 'Older than a day';
 $lang['events_older_than_1_week'] = 'Older than a week';
@@ -21,3 +24,7 @@ $lang['events_older_than_1_year'] = 'Older than a year';
 $lang['events_show_info'] = 'Show Info';
 $lang['events_show_warning'] = 'Show Warning';
 $lang['events_show_critical'] = 'Show Critical';
+$lang['events_tooltip_severity'] = 'Events are classified into three categories - Informational, Warnings and Critical.';
+$lang['events_tooltip_info'] = 'Informational events are those that do not pose any risk to the normal operation of your server.  An example would be a validated user logging on to the server over a VPN tunnel.';
+$lang['events_tooltip_warning'] = 'Warnings are those that may pose a risk to the normal operation of your server if left unattended.  An example would be a disk partition that has exceeded 90% capacity.';
+$lang['events_tooltip_critical'] = 'Critical events are those that have already caused some level of degradation (service, security, performance etc.) in the operation of your server.  An example would be a kernel OOM event that has shutdown the proxy server.';

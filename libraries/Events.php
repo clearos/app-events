@@ -183,7 +183,7 @@ class Events extends Engine
         else
             $limit = " LIMIT $limit";
 
-        $sql = 'SELECT * FROM alerts' . $where . $limit;
+        $sql = 'SELECT * FROM alerts' . $where . " ORDER BY id DESC" . $limit;
 
         try {
             $dbs = $this->db_handle->prepare($sql);
