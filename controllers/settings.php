@@ -101,6 +101,24 @@ class Settings extends ClearOS_Controller
 
         $form_ok = $this->form_validation->run();
 
+        // Extra validation
+        //-----------------
+
+        if ($form_ok) {
+            if ($this->input->post('instant_status') && !$this->input->post('instant_warning') && !$this->input->post('instant_critical')) {
+                $this->form_validation->set_error('instant_status', lang('events_minimum_instant_threshold'));
+                $form_ok = FALSE;
+            }
+            if ($this->input->post('daily_status') &&
+                !$this->input->post('daily_info') &&
+                !$this->input->post('daily_warning') &&
+                !$this->input->post('daily_critical')) 
+            {
+                $this->form_validation->set_error('daily_status', lang('events_minimum_instant_threshold'));
+                $form_ok = FALSE;
+            }
+        }
+
         // Handle form submit
         //-------------------
 
