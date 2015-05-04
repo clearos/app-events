@@ -6,7 +6,7 @@
 
 $app['basename'] = 'events';
 $app['version'] = '2.0.20';
-$app['release'] = '1';
+$app['release'] = '2';
 $app['vendor'] = 'ClearFoundation';
 $app['packager'] = 'ClearFoundation';
 $app['license'] = 'GPLv3';
@@ -40,6 +40,7 @@ $app['core_obsoletes'] = array(
 
 $app['core_requires'] = array(
     'clearsync',
+    'csplugin-events',
 );
 
 $app['core_directory_manifest'] = array(

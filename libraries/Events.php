@@ -102,14 +102,14 @@ class Events extends Engine
     // C O N S T A N T S
     ///////////////////////////////////////////////////////////////////////////////
 
-    const DB_CONN = '/var/lib/csplugin-sysmon/sysmon.db';
+    const DB_CONN = '/var/lib/csplugin-events/events.db';
     const FILE_CONFIG = '/etc/clearos/events.conf';
     const INSTANT_NOTIFICATION = 1;
     const DAILY_NOTIFICATION = 2;
-    const FLAG_INFO = 0x1;
-    const FLAG_WARN = 0x2;
-    const FLAG_CRIT = 0x4;
-    const FLAG_SENT = 0x100;
+    const FLAG_INFO = 0x00000001;
+    const FLAG_WARN = 0x00000002;
+    const FLAG_CRIT = 0x00000004;
+    const FLAG_SENT = 0x00000100;
     const FLAG_ALL = 0xFFFFFFFF;
 
     ///////////////////////////////////////////////////////////////////////////////
