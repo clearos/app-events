@@ -61,5 +61,17 @@ $app['core_file_manifest'] = array(
         'group' => 'webconfig',
         'config' => TRUE,
         'config_params' => 'noreplace',
+    ),
+    'events.cron' => array(
+        'target' => '/etc/cron.d/app-events',
+        'mode' => '0644',
+        'owner' => 'root',
+        'group' => 'root',
+    ),
+    'events-notification' => array(
+        'target' => '/usr/sbin/events-notification',
+        'mode' => '0755',
+        'owner' => 'root',
+        'group' => 'root',
     )
 );

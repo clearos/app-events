@@ -46,6 +46,7 @@ require_once $bootstrap . '/bootstrap.php';
 // T R A N S L A T I O N S
 ///////////////////////////////////////////////////////////////////////////////
 
+clearos_load_language('base');
 clearos_load_language('events');
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -57,13 +58,17 @@ clearos_load_language('events');
 
 use \clearos\apps\base\Configuration_File as Configuration_File;
 use \clearos\apps\base\Engine as Engine;
-use \clearos\apps\Events\SSP as SSP;
 use \clearos\apps\base\File as File;
+use \clearos\apps\events\SSP as SSP;
+use \clearos\apps\mail_notification\Mail_Notification as Mail_Notification;
+use \clearos\apps\network\Hostname as Hostname;
 
 clearos_load_library('base/Configuration_File');
 clearos_load_library('base/Engine');
-clearos_load_library('events/SSP');
 clearos_load_library('base/File');
+clearos_load_library('events/SSP');
+clearos_load_library('mail_notification/Mail_Notification');
+clearos_load_library('network/Hostname');
 
 // Exceptions
 //-----------
@@ -99,6 +104,8 @@ class Events extends Engine
 
     const DB_CONN = '/var/lib/csplugin-sysmon/sysmon.db';
     const FILE_CONFIG = '/etc/clearos/events.conf';
+    const INSTANT_NOTIFICATION = 1;
+    const DAILY_NOTIFICATION = 2;
     const FLAG_INFO = 1;
     const FLAG_WARN = 2;
     const FLAG_CRIT = 4;
@@ -108,6 +115,7 @@ class Events extends Engine
     // V A R I A B L E S
     ///////////////////////////////////////////////////////////////////////////////
 
+    protected $db_handle = NULL;
     protected $config = NULL;
     protected $is_loaded = FALSE;
 
@@ -511,6 +519,70 @@ class Events extends Engine
         }
 
         return $result;
+    }
+
+    /**
+    * Sends a notification email.
+    *
+    * @param int    $type type of notification
+    * @param String $date date of daily notification, if applicable
+    *
+    * @return void
+    * @throws Engine_Exception
+    */
+
+    function send_notification($type, $date = NULL)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if ($type == self::INSTANT_NOTIFICATION) {
+            if (!$this->get_instant_status() || !$this->get_instant_email())
+                return;
+            $email_list = $this->get_instant_email();
+        } else if ($type == self::DAILY_NOTIFICATION) {
+            if (!$this->get_daily_status() || !$this->get_daily_email())
+                return;
+            $email_list = $this->get_daily_email();
+        }
+
+        $mailer = new Mail_Notification();
+        $hostname = new Hostname();
+        $date_obj = \DateTime::createFromFormat('d-m-Y', $date);
+        $subject = lang('events_event_notification') . ' - ' . $hostname->get() . ($type == self::DAILY_NOTIFICATION ? " (" . $date_obj->format('M j, Y') . ")" : "");
+        $body = "<table cellspacing='0' cellpadding='8' border='0' style='font: Arial, sans-serif;'>\n";
+        $body .= "  <tr>\n";
+        $body .= "    <th style='text-align: center;'></th>" .
+                 "    <th style='text-align: left;'>" . lang('base_description') . "</th>" .
+                 "    <th style='text-align: left;'>" . lang('events_type') . "</th>" .
+                 "    <th style='text-align: left;'>" . lang('base_timestamp') . "</th>\n";
+        $body .= "  <tr>\n";
+        $events = $this->get_events();
+        $counter = 0;
+
+        foreach ($events['events'] as $event) {
+            $colour = '#608921'; 
+            if ($event['flags'] & 2)
+                $colour = '#f39c12'; 
+            else if ($event['flags'] & 4)
+                $colour = '#dd4b39'; 
+            $body .= "  <tr style='background-color: " . ($counter % 2 ? "#f5f5f5" : "#fff") . ";'>\n";
+            $body .= "    <td width='2%' style='border-top: 1px solid #ddd; text-align: center;'><span style='color: $colour;'>&#x2b24;</span></td>\n" .
+                     "    <td width='58%' style='border-top: 1px solid #ddd; text-align: left;'>" . $event['desc'] . "</td>\n" .
+                     "    <td width='15%' style='border-top: 1px solid #ddd; text-align: left;'>" . $event['type'] . "</td>\n" .
+                     "    <td width='25%' style='border-top: 1px solid #ddd; text-align: left;'>" . date('Y-m-d H:i:s', strftime($event['stamp'])) . "</td>\n";
+            $body .= "  </tr>\n";
+            $counter++;
+        }
+        $body .= "</table>\n";
+
+        
+
+        foreach ($email_list as $email)
+            $mailer->add_recipient($email);
+        $mailer->set_message_subject($subject);
+        $mailer->set_message_html_body($body);
+
+        $mailer->send();
     }
 
     ///////////////////////////////////////////////////////////////////////////////

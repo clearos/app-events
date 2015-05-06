@@ -1,0 +1,109 @@
+#!/usr/clearos/sandbox/usr/bin/php
+<?php
+
+/**
+ * Events Notification.
+ *
+ * @category   apps
+ * @package    events
+ * @subpackage scripts
+ * @author     ClearFoundation <developer@clearfoundation.com>
+ * @copyright  2008-2011 ClearFoundation
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU General Public License version 3 or later
+ * @link       http://www.clearfoundation.com/docs/developer/apps/events/
+ */
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+// N A M E S P A C E
+///////////////////////////////////////////////////////////////////////////////
+
+namespace clearos\apps\events;
+
+///////////////////////////////////////////////////////////////////////////////
+// B O O T S T R A P
+///////////////////////////////////////////////////////////////////////////////
+
+$bootstrap = getenv('CLEAROS_BOOTSTRAP') ? getenv('CLEAROS_BOOTSTRAP') : '/usr/clearos/framework/shared';
+require_once $bootstrap . '/bootstrap.php';
+
+///////////////////////////////////////////////////////////////////////////////
+// T R A N S L A T I O N S
+///////////////////////////////////////////////////////////////////////////////
+
+clearos_load_language('events');
+
+///////////////////////////////////////////////////////////////////////////////
+// D E P E N D E N C I E S
+///////////////////////////////////////////////////////////////////////////////
+
+// Classes
+//--------
+
+use \clearos\apps\events\Events as Events;
+
+clearos_load_library('events/Events');
+
+// Exceptions
+//-----------
+
+use \Exception as Exception;
+
+///////////////////////////////////////////////////////////////////////////////
+// M A I N
+///////////////////////////////////////////////////////////////////////////////
+
+// Command line options
+//--------------------------------------------------------------------
+
+$short_options  = '';
+$short_options .= 'd::';  // Daily
+
+$options = getopt($short_options);
+
+$events = new Events();
+
+$type = Events::INSTANT_NOTIFICATION;
+$date = NULL;
+
+if (isset($options['d'])) {
+    $type = Events::DAILY_NOTIFICATION;
+    if ($options['d'] == '') {
+        $date = date('d-m-Y');
+    } else {
+        if (preg_match("/\d{2}-\d{2}-\d{4}/", $options['d'])) {
+            $date = $options['d'];
+        } else {
+            echo "Invalid daily date format - DD-MM-YYYY\n";
+            exit(1);
+        }
+    }
+}
+
+// Command line options
+//---------------------
+
+try {
+    $events->send_notification($type, $date);
+} catch (Exception $e) {
+    echo clearos_exception_message($e) . "\n";
+    clearos_log('events', clearos_exception_message($e));
+}
+
+// vim: syntax=php ts=4

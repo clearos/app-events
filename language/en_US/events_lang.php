@@ -9,6 +9,7 @@ $lang['events_general_settings'] = 'General Settings';
 $lang['events_instant_notifications'] = 'Instant Notifications';
 $lang['events_daily_event_summary'] = 'Daily Event Summary';
 $lang['events_autopurge'] = 'Auto-Purge';
+$lang['events_event_notification'] = 'Event Notification';
 $lang['events_monitoring_status'] = 'Event Monitoring Status';
 $lang['events_email_notifications'] = 'Email Notifications';
 $lang['events_info'] = 'Informational Events';
