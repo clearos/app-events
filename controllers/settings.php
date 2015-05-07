@@ -87,14 +87,14 @@ class Settings extends ClearOS_Controller
             $this->form_validation->set_policy('instant_status', 'events/Events', 'validate_instant_status', FALSE);
             $this->form_validation->set_policy('daiyl_status', 'events/Events', 'validate_daily_status', FALSE);
             if ($this->input->post('instant_status')) {
-                $this->form_validation->set_policy('instant_warning', 'events/Events', 'validate_threshold', FALSE);
-                $this->form_validation->set_policy('instant_critical', 'events/Events', 'validate_threshold', FALSE);
+                $this->form_validation->set_policy('instant_warning', 'events/Events', 'validate_flags', FALSE);
+                $this->form_validation->set_policy('instant_critical', 'events/Events', 'validate_flags', FALSE);
                 $this->form_validation->set_policy('instant_email', 'events/Events', 'validate_email', TRUE);
             }
             if ($this->input->post('daily_status')) {
-                $this->form_validation->set_policy('daily_info', 'events/Events', 'validate_threshold', FALSE);
-                $this->form_validation->set_policy('daily_warning', 'events/Events', 'validate_threshold', FALSE);
-                $this->form_validation->set_policy('daily_critical', 'events/Events', 'validate_threshold', FALSE);
+                $this->form_validation->set_policy('daily_info', 'events/Events', 'validate_flags', FALSE);
+                $this->form_validation->set_policy('daily_warning', 'events/Events', 'validate_flags', FALSE);
+                $this->form_validation->set_policy('daily_critical', 'events/Events', 'validate_flags', FALSE);
                 $this->form_validation->set_policy('daily_email', 'events/Events', 'validate_email', TRUE);
             }
         }
@@ -106,7 +106,7 @@ class Settings extends ClearOS_Controller
 
         if ($form_ok) {
             if ($this->input->post('instant_status') && !$this->input->post('instant_warning') && !$this->input->post('instant_critical')) {
-                $this->form_validation->set_error('instant_status', lang('events_minimum_instant_threshold'));
+                $this->form_validation->set_error('instant_status', lang('events_instant_flags'));
                 $form_ok = FALSE;
             }
             if ($this->input->post('daily_status') &&
@@ -114,7 +114,7 @@ class Settings extends ClearOS_Controller
                 !$this->input->post('daily_warning') &&
                 !$this->input->post('daily_critical')) 
             {
-                $this->form_validation->set_error('daily_status', lang('events_minimum_instant_threshold'));
+                $this->form_validation->set_error('daily_status', lang('events_daily_flags'));
                 $form_ok = FALSE;
             }
         }
@@ -131,7 +131,7 @@ class Settings extends ClearOS_Controller
                 if ($this->input->post('status')) {
                     $this->events->set_autopurge($this->input->post('autopurge'));
                     if ($this->input->post('instant_status')) {
-                        $this->events->set_instant_threshold(
+                        $this->events->set_instant_flags(
                             FALSE,
                             (bool)$this->input->post('instant_warning'),
                             (bool)$this->input->post('instant_critical')
@@ -139,7 +139,7 @@ class Settings extends ClearOS_Controller
                         $this->events->set_instant_email($this->input->post('instant_email'));
                     }
                     if ($this->input->post('daily_status')) {
-                        $this->events->set_daily_threshold(
+                        $this->events->set_daily_flags(
                             (bool)$this->input->post('daily_info'),
                             (bool)$this->input->post('daily_warning'),
                             (bool)$this->input->post('daily_critical')
@@ -162,10 +162,10 @@ class Settings extends ClearOS_Controller
         $data['instant_email'] = $this->events->get_instant_email();
         $data['daily_status'] = $this->events->get_daily_status();
         $data['daily_email'] = $this->events->get_daily_email();
-        list($data['instant_info'], $data['instant_warning'], $data['instant_critical']) = $this->events->get_instant_threshold();
-        list($data['daily_info'], $data['daily_warning'], $data['daily_critical']) = $this->events->get_daily_threshold();
+        list($data['instant_info'], $data['instant_warning'], $data['instant_critical']) = $this->events->get_instant_flags();
+        list($data['daily_info'], $data['daily_warning'], $data['daily_critical']) = $this->events->get_daily_flags();
         
-        $daily_threshold = $this->events->get_instant_threshold();
+        $daily_flags = $this->events->get_instant_flags();
         $data['flags'] = 7;  // Default all severity levels (1, 2 and 4 bits)
         if ($this->session->userdata('events_flags') !== FALSE)
             $data['flags'] = $this->session->userdata('events_flags');

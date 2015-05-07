@@ -106,10 +106,11 @@ class Events extends Engine
     const FILE_CONFIG = '/etc/clearos/events.conf';
     const INSTANT_NOTIFICATION = 1;
     const DAILY_NOTIFICATION = 2;
-    const FLAG_INFO = 1;
-    const FLAG_WARN = 2;
-    const FLAG_CRIT = 4;
-    const FLAG_ALL = 65535;
+    const FLAG_INFO = 0x1;
+    const FLAG_WARN = 0x2;
+    const FLAG_CRIT = 0x4;
+    const FLAG_SENT = 0x100;
+    const FLAG_ALL = 0xFFFFFFFF;
 
     ///////////////////////////////////////////////////////////////////////////////
     // V A R I A B L E S
@@ -187,7 +188,7 @@ class Events extends Engine
     }
 
     /**
-     * Set the instant threshold.
+     * Set the instant flags.
      *
      * @param bool $info info
      * @param bool $warn warning
@@ -197,13 +198,13 @@ class Events extends Engine
      * @throws Validation_Exception
      */
 
-    function set_instant_threshold($info, $warn, $crit)
+    function set_instant_flags($info, $warn, $crit)
     {
         clearos_profile(__METHOD__, __LINE__);
 
-        Validation_Exception::is_valid($this->validate_threshold($info));
-        Validation_Exception::is_valid($this->validate_threshold($warn));
-        Validation_Exception::is_valid($this->validate_threshold($crit));
+        Validation_Exception::is_valid($this->validate_flags($info));
+        Validation_Exception::is_valid($this->validate_flags($warn));
+        Validation_Exception::is_valid($this->validate_flags($crit));
 
         $value = 0;
         if ($info)
@@ -213,7 +214,7 @@ class Events extends Engine
         if ($crit)
             $value += self::FLAG_CRIT;
 
-        $this->_set_parameter('instant_threshold', $value);
+        $this->_set_parameter('instant_flags', $value);
     }
 
     /**
@@ -253,7 +254,7 @@ class Events extends Engine
     }
 
     /**
-     * Set the daily threshold.
+     * Set the daily flags.
      *
      * @param bool $info info
      * @param bool $warn warning
@@ -263,13 +264,13 @@ class Events extends Engine
      * @throws Validation_Exception
      */
 
-    function set_daily_threshold($info, $warn, $crit)
+    function set_daily_flags($info, $warn, $crit)
     {
         clearos_profile(__METHOD__, __LINE__);
 
-        Validation_Exception::is_valid($this->validate_threshold($info));
-        Validation_Exception::is_valid($this->validate_threshold($warn));
-        Validation_Exception::is_valid($this->validate_threshold($crit));
+        Validation_Exception::is_valid($this->validate_flags($info));
+        Validation_Exception::is_valid($this->validate_flags($warn));
+        Validation_Exception::is_valid($this->validate_flags($crit));
 
         $value = 0;
         if ($info)
@@ -279,7 +280,7 @@ class Events extends Engine
         if ($crit)
             $value += self::FLAG_CRIT;
 
-        $this->_set_parameter('daily_threshold', $value);
+        $this->_set_parameter('daily_flags', $value);
     }
 
     /**
@@ -349,25 +350,28 @@ class Events extends Engine
     }
 
     /**
-     * Get the instant notification threshold.
+     * Get the instant notification flags that determine what events are sent via email.
      *
-     * @return array
+     * @return mixed
      */
 
-    function get_instant_threshold()
+    function get_instant_flags($as_array = TRUE)
     {
         clearos_profile(__METHOD__, __LINE__);
 
         if (!$this->is_loaded)
             $this->_load_config();
 
-        $threshold = array(
-            ($this->config['instant_threshold'] & self::FLAG_INFO),
-            ($this->config['instant_threshold'] & self::FLAG_WARN),
-            ($this->config['instant_threshold'] & self::FLAG_CRIT),
+        if (!$as_array)
+            return $this->config['instant_flags'];
+
+        $flags = array(
+            ($this->config['instant_flags'] & self::FLAG_INFO),
+            ($this->config['instant_flags'] & self::FLAG_WARN),
+            ($this->config['instant_flags'] & self::FLAG_CRIT),
         );
 
-        return $threshold;
+        return $flags;
     }
 
     /**
@@ -403,25 +407,28 @@ class Events extends Engine
     }
 
     /**
-     * Get the daily notification threshold.
+     * Get the daily notification flags that determine what events are sent via email.
      *
      * @return array
      */
 
-    function get_daily_threshold()
+    function get_daily_flags($as_array = TRUE)
     {
         clearos_profile(__METHOD__, __LINE__);
 
         if (!$this->is_loaded)
             $this->_load_config();
 
-        $threshold = array(
-            ($this->config['daily_threshold'] & self::FLAG_INFO),
-            ($this->config['daily_threshold'] & self::FLAG_WARN),
-            ($this->config['daily_threshold'] & self::FLAG_CRIT),
+        if (!$as_array)
+            return $this->config['daily_flags'];
+
+        $flags = array(
+            ($this->config['daily_flags'] & self::FLAG_INFO),
+            ($this->config['daily_flags'] & self::FLAG_WARN),
+            ($this->config['daily_flags'] & self::FLAG_CRIT),
         );
 
-        return $threshold;
+        return $flags;
     }
 
     /**
@@ -441,7 +448,7 @@ class Events extends Engine
     }
 
     /**
-     * Get auto purge threshold options.
+     * Get auto purge flags options.
      *
      * @return array
      * @throws Engine_Exception
@@ -465,15 +472,17 @@ class Events extends Engine
     /**
      * Get events.
      *
-     *
-     * @param int $filter filter for flags
-     * @param int $limit  limit number of records returned
+     * @param int     $filter filter for flags
+     * @param int     $limit  limit number of records returned
+     * @param int     $start  filter results based on this start timestamp
+     * @param int     $stop   filter results based on this stop timestamp
+     * @param String  $order  sort order (ASC or DESC)
      *
      * @return array
      * @throws Engine_Exception
      */
 
-    function get_events($filter = self::FLAG_ALL, $limit = 0)
+    function get_events($filter = self::FLAG_ALL, $limit = -1, $start = -1, $stop = -1, $order = 'DESC')
     {
         clearos_profile(__METHOD__, __LINE__);
 
@@ -494,13 +503,29 @@ class Events extends Engine
             if ($filter & self::FLAG_CRIT)
                 $flags_filter[] = 'flags & ' . self::FLAG_CRIT;
 			$where = ' WHERE ('. implode(' OR ', $flags_filter) . ')';
+
+            if (!($filter & self::FLAG_SENT))
+                $where .= ' AND NOT flags & ' . self::FLAG_SENT;
         }
-        if ($limit == 0)
+
+        echo "$start and $stop\n";
+        if ($start > 0 && $stop > 0)
+            $where .= " AND stamp BETWEEN $start AND $stop";
+        else if ($start > 0)
+            $where .= " AND stamp >= $start";
+        else if ($stop > 0)
+            $where .= " AND stamp <= $stop";
+
+        // Check order parameter
+        if ($order != 'DESC' && $order != 'ASC')
+            $order = 'DESC';
+
+        if ($limit <= 0)
             $limit = '';
         else
             $limit = " LIMIT $limit";
 
-        $sql = 'SELECT * FROM alerts' . $where . " ORDER BY id DESC" . $limit;
+        $sql = 'SELECT * FROM alerts' . $where . " ORDER BY id " . $order . " " . $limit;
 
         try {
             $dbs = $this->db_handle->prepare($sql);
@@ -535,20 +560,43 @@ class Events extends Engine
     {
         clearos_profile(__METHOD__, __LINE__);
 
+        $flags = 0;
+        $limit = -1;
         if ($type == self::INSTANT_NOTIFICATION) {
             if (!$this->get_instant_status() || !$this->get_instant_email())
                 return;
             $email_list = $this->get_instant_email();
+            $flags = $this->get_instant_flags(FALSE);
+            $ts = new \DateTime();
+            $ts->add(\DateInterval::createFromDateString('10 minutes ago'));
+            $start = $ts->getTimestamp();
+            $stop = -1;
         } else if ($type == self::DAILY_NOTIFICATION) {
             if (!$this->get_daily_status() || !$this->get_daily_email())
                 return;
             $email_list = $this->get_daily_email();
+            $flags = $this->get_daily_flags(FALSE);
+            $flags += self::FLAG_SENT;
+            // Need to set some limit, no?
+            $limit = 10000;
+            if ($date == NULL)
+                $ts = new \DateTime();
+            else
+                $ts = \DateTime::createFromFormat('d-m-Y', $date);
+
+            $ts->add(\DateInterval::createFromDateString('yesterday'));
+            $ts->setTime(0, 0, 0);
+            $start = $ts->getTimestamp();
+            $ts->setTime(23, 59, 59);
+            $stop = $ts->getTimestamp();
+        } else {
+            // Invalid type
+            return;
         }
 
         $mailer = new Mail_Notification();
         $hostname = new Hostname();
-        $date_obj = \DateTime::createFromFormat('d-m-Y', $date);
-        $subject = lang('events_event_notification') . ' - ' . $hostname->get() . ($type == self::DAILY_NOTIFICATION ? " (" . $date_obj->format('M j, Y') . ")" : "");
+        $subject = lang('events_event_notification') . ' - ' . $hostname->get() . ($type == self::DAILY_NOTIFICATION ? " (" . $ts->format('M j, Y') . ")" : "");
         $body = "<table cellspacing='0' cellpadding='8' border='0' style='font: Arial, sans-serif;'>\n";
         $body .= "  <tr>\n";
         $body .= "    <th style='text-align: center;'></th>" .
@@ -556,14 +604,15 @@ class Events extends Engine
                  "    <th style='text-align: left;'>" . lang('events_type') . "</th>" .
                  "    <th style='text-align: left;'>" . lang('base_timestamp') . "</th>\n";
         $body .= "  <tr>\n";
-        $events = $this->get_events();
+        $events = $this->get_events($flags, $limit, $start, $stop);
         $counter = 0;
 
+        $records = array();
         foreach ($events['events'] as $event) {
             $colour = '#608921'; 
-            if ($event['flags'] & 2)
+            if ($event['flags'] & 0x2)
                 $colour = '#f39c12'; 
-            else if ($event['flags'] & 4)
+            else if ($event['flags'] & 0x3)
                 $colour = '#dd4b39'; 
             $body .= "  <tr style='background-color: " . ($counter % 2 ? "#f5f5f5" : "#fff") . ";'>\n";
             $body .= "    <td width='2%' style='border-top: 1px solid #ddd; text-align: center;'><span style='color: $colour;'>&#x2b24;</span></td>\n" .
@@ -572,6 +621,8 @@ class Events extends Engine
                      "    <td width='25%' style='border-top: 1px solid #ddd; text-align: left;'>" . date('Y-m-d H:i:s', strftime($event['stamp'])) . "</td>\n";
             $body .= "  </tr>\n";
             $counter++;
+            if ($type == self::INSTANT_NOTIFICATION)
+                $records[] = $event['id'];
         }
         $body .= "</table>\n";
 
@@ -583,6 +634,9 @@ class Events extends Engine
         $mailer->set_message_html_body($body);
 
         $mailer->send();
+
+        // TODO
+        // Take $records array and set FLAG_SENT bit
     }
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -721,14 +775,14 @@ class Events extends Engine
     }
 
     /**
-     * Validation routine for threshold.
+     * Validation routine for flags.
      *
-     * @param boolean $threshold threshold
+     * @param boolean $flags flags
      *
-     * @return mixed void if threshold is valid, errmsg otherwise
+     * @return mixed void if flags is valid, errmsg otherwise
      */
 
-    public function validate_threshold($threshold)
+    public function validate_flags($flags)
     {
         clearos_profile(__METHOD__, __LINE__);
     }
