@@ -508,7 +508,6 @@ class Events extends Engine
                 $where .= ' AND NOT flags & ' . self::FLAG_SENT;
         }
 
-        echo "$start and $stop\n";
         if ($start > 0 && $stop > 0)
             $where .= " AND stamp BETWEEN $start AND $stop";
         else if ($start > 0)
