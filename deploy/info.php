@@ -40,6 +40,7 @@ $app['core_obsoletes'] = array(
 
 $app['core_requires'] = array(
     'clearsync',
+    'csplugin-filewatch',
 );
 
 $app['core_directory_manifest'] = array(
@@ -73,5 +74,6 @@ $app['core_file_manifest'] = array(
         'mode' => '0755',
         'owner' => 'root',
         'group' => 'root',
-    )
+    ),
+    'filewatch-events-configuration.conf'=> array('target' => '/etc/clearsync.d/filewatch-events-configuration.conf'),
 );
