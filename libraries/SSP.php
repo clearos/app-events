@@ -365,7 +365,7 @@ class SSP {
 	{
 		try {
 			$db = @new \PDO(
-				"sqlite:/var/lib/csplugin-sysmon/sysmon.db",
+				"sqlite:/var/lib/csplugin-events/events.db",
 				NULL, NULL,
 				array( \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION )
 			);
