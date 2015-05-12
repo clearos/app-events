@@ -2,8 +2,8 @@
 Name: app-events
 Epoch: 1
 Version: 2.0.20
-Release: 1%{dist}
-Summary: Event System - Core
+Release: 2%{dist}
+Summary: Events and Notifications - Core
 License: LGPLv3
 Group: ClearOS/Libraries
 Source: app-events-%{version}.tar.gz
@@ -13,9 +13,10 @@ Buildarch: noarch
 The Event System app provides a way for other apps to listen for events that occur on the system
 
 %package core
-Summary: Event System - Core
+Summary: Events and Notifications - Core
 Requires: app-base-core
 Requires: clearsync
+Requires: csplugin-events
 Obsoletes: app-clearsync-core
 
 %description core
@@ -33,6 +34,9 @@ cp -r * %{buildroot}/usr/clearos/apps/events/
 
 install -d -m 0755 %{buildroot}/var/clearos/events
 install -D -m 0644 packaging/clearsync.php %{buildroot}/var/clearos/base/daemon/clearsync.php
+install -D -m 0755 packaging/events-notification %{buildroot}/usr/sbin/events-notification
+install -D -m 0644 packaging/events.conf %{buildroot}/etc/clearos/events.conf
+install -D -m 0644 packaging/events.cron %{buildroot}/etc/cron.d/app-events
 install -D -m 0755 packaging/trigger %{buildroot}/usr/sbin/trigger
 
 %post core
@@ -63,4 +67,7 @@ exit 0
 /usr/clearos/apps/events/language
 /usr/clearos/apps/events/libraries
 /var/clearos/base/daemon/clearsync.php
+/usr/sbin/events-notification
+%attr(0644,webconfig,webconfig) %config(noreplace) /etc/clearos/events.conf
+/etc/cron.d/app-events
 /usr/sbin/trigger
