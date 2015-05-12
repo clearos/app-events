@@ -133,24 +133,29 @@ class Events extends ClearOS_Controller
                 'path' => '/var/lib/csplugin-sysmon/sysmon.db'
             );
             $table = 'alerts';
-            $primaryKey = 'id';
+            $primaryKey = '';
             $columns = array(
                 array( 'db' => 'flags', 'dt' => 0,
                     'formatter' => function( $d, $row ) {
-                        $icons = array(
-                            '0' => icon('unknown'),
-                            '1' => icon('info', array('class' => 'theme-text-ok')),
-                            '2' => icon('warning', array('class' => 'theme-text-warning')),
-                            '4' => icon('critical', array('class' => 'theme-text-alert')),
-                        );
-                        return $icons[(int)$d];
+                        if ((int)$d & 4)
+                            return icon('critical', array('class' => 'theme-text-alert'));
+                        else if ((int)$d & 2)
+                            return icon('warning', array('class' => 'theme-text-warning'));
+                        else if ((int)$d & 1)
+                            return icon('info', array('class' => 'theme-text-ok'));
+                        else
+                            return icon('unknown');
                     }
                 ),
                 array( 'db' => 'desc', 'dt' => 1 ),
-                array( 'db' => 'type',  'dt' => 2 ),
+                array( 'db' => 'basename',  'dt' => 2,
+                    'formatter' => function( $d, $row ) {
+                        return "<span style='white-space: nowrap;'>" . $d . "</span>";
+                    }
+                ),
                 array( 'db' => 'stamp',  'dt' => 3,
                     'formatter' => function( $d, $row ) {
-                        return date( 'Y-m-d H:i:s', strftime($d));
+                        return "<span style='white-space: nowrap;'>" . date('Y-m-d H:i:s', strftime($d)) . "</span>";
                     }
                 )
             );

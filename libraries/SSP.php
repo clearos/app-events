@@ -178,7 +178,8 @@ class SSP {
 			}
 		}
 		// Combine the filters into a single string
-		$where = '';
+        $where = "alerts.id = stamps.id";
+
 		if ( count( $globalSearch ) ) {
 			$where = '('.implode(' OR ', $globalSearch).')';
 		}
@@ -190,11 +191,11 @@ class SSP {
 		if ( isset($request['flags']) ) {
             $flags_filter = array();
             if ($request['flags'] & 1)
-                $flags_filter[] = 'flags & 1';
+                $flags_filter[] = 'alerts.flags & 1';
             if ($request['flags'] & 2)
-                $flags_filter[] = 'flags & 2';
+                $flags_filter[] = 'alerts.flags & 2';
             if ($request['flags'] & 4)
-                $flags_filter[] = 'flags & 4';
+                $flags_filter[] = 'alerts.flags & 4';
 			$where = $where === '' ?
 				implode(' OR ', $flags_filter) :
 				$where .' AND ('. implode(' OR ', $flags_filter) . ')';
@@ -230,16 +231,17 @@ class SSP {
 		$where = self::filter( $request, $columns, $bindings );
 
 		// Main query to actually get the data
+			//"SELECT COUNT(`{$primaryKey}`)
 		$results = self::sql_exec( $db, $bindings,
-			"SELECT COUNT(`{$primaryKey}`)
-			 FROM `$table`
+			"SELECT COUNT(alerts.id)
+			 FROM `$table`,`stamps`
 			 $where"
 		);
 		$count = $results[0][0];
 
 		$results = self::sql_exec( $db, $bindings,
-			"SELECT `".implode("`, `", self::pluck($columns, 'db'))."`
-			 FROM `$table`
+			"SELECT ".implode(", ", self::pluck($columns, 'db'))."
+			 FROM `$table`,`stamps`
 			 $where
 			 $order
 			 $limit"
@@ -255,8 +257,9 @@ class SSP {
 
 		// Total data set length
 		$resTotalLength = self::sql_exec( $db,
-			"SELECT COUNT(`{$primaryKey}`)
-			 FROM `$table`"
+			"SELECT COUNT(alerts.id)
+			 FROM `$table`,`stamps`
+             WHERE alerts.id = stamps.id"
 		);
 
 		$recordsTotal = $resTotalLength[0][0];

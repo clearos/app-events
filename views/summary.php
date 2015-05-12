@@ -48,7 +48,7 @@ $anchors = NULL;
 $headers = array(
     '',
     lang('base_description'),
-    lang('events_type'),
+    lang('events_source'),
     lang('base_timestamp')
 );
 
