@@ -32,8 +32,6 @@ $app['tooltip'] = array(
 // Packaging
 /////////////////////////////////////////////////////////////////////////////
 
-$app['core_only'] = TRUE;
-
 $app['core_obsoletes'] = array(
     'app-clearsync-core',
 );
@@ -78,3 +76,22 @@ $app['core_file_manifest'] = array(
     ),
     'filewatch-events-configuration.conf'=> array('target' => '/etc/clearsync.d/filewatch-events-configuration.conf'),
 );
+
+/////////////////////////////////////////////////////////////////////////////
+// Dashboard Widgets
+/////////////////////////////////////////////////////////////////////////////
+
+$app['dashboard_widgets'] = array(
+    $app['category'] => array(
+        'events/dashboard_widgets/last_24' => array(
+            'title' => lang('events_last_24_hours'),
+            'restricted' => FALSE,
+        )
+    )
+);
+
+/////////////////////////////////////////////////////////////////////////////
+// App Removeal Dependencies
+/////////////////////////////////////////////////////////////////////////////
+
+$app['delete_dependency'] = array();

@@ -5,6 +5,7 @@ $lang['events_app_name'] = 'Events and Notifications';
 $lang['events_events'] = 'Events';
 $lang['events_severity'] = 'Severity';
 $lang['events_source'] = 'Source';
+$lang['events_last_24_hours'] = 'Events - Last 24 Hours';
 $lang['events_general_settings'] = 'General Settings';
 $lang['events_instant_notifications'] = 'Instant Notifications';
 $lang['events_daily_event_summary'] = 'Daily Event Summary';

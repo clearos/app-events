@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Events manager view.
+ * Lst 24 Hour summary view.
  *
  * @category   apps
  * @package    events
@@ -36,41 +36,40 @@
 $this->lang->load('events');
 $this->lang->load('base');
 
-///////////////////////////////////////////////////////////////////////////////
-// Anchors
-///////////////////////////////////////////////////////////////////////////////
+$link = anchor_view('/app/events', 'high', array('class' => 'pull-right'));
 
-$anchors = NULL;
+echo box_open(lang('events_last_24_hours'));
+echo box_content_open();
+// Informational
+echo row_open();
+echo column_open(9);
+echo icon('critical', array('class' => 'theme-text-info')) . '&nbsp;&nbsp;' . lang('events_info');
+echo column_close();
+echo column_open(3);
+echo $summary['info'];
+echo column_close();
+echo row_close();
 
-///////////////////////////////////////////////////////////////////////////////
-// Headers
-///////////////////////////////////////////////////////////////////////////////
+// Warnings
+echo row_open();
+echo column_open(9);
+echo icon('critical', array('class' => 'theme-text-warning')) . '&nbsp;&nbsp;' . lang('events_warning');
+echo column_close();
+echo column_open(3);
+echo $summary['warning'];
+echo column_close();
+echo row_close();
 
-$headers = array(
-    '',
-    lang('base_description'),
-    lang('base_timestamp')
-);
+// Critial
+echo row_open();
+echo column_open(9);
+echo icon('critical', array('class' => 'theme-text-alert')) . '&nbsp;&nbsp;' . lang('events_critical');
+echo column_close();
+echo column_open(3);
+echo $summary['critical'];
+echo column_close();
+echo row_close();
 
-///////////////////////////////////////////////////////////////////////////////
-// Summary table
-///////////////////////////////////////////////////////////////////////////////
-
-$options = array(
-    'id' => 'events_list',
-    'sort-default-col' => 2,
-    'sort-default-dir' => 'desc',
-    'ajax' => '/app/events/get_info',
-    'no_action' => TRUE
-);
-
-echo summary_table(
-    lang('events_events'),
-    $anchors,
-    $headers,
-    NULL,
-    $options
-);
-
-// Used for flag selectors in JS
-echo "<input type='hidden' id='flags' class='theme-hidden' value='$flags' />";
+echo box_content_close();
+echo box_footer('footer-events', $link, array('class' => 'theme-clear'));
+echo box_close();

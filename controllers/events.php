@@ -148,12 +148,7 @@ class Events extends ClearOS_Controller
                     }
                 ),
                 array( 'db' => 'desc', 'dt' => 1 ),
-                array( 'db' => 'basename',  'dt' => 2,
-                    'formatter' => function( $d, $row ) {
-                        return "<span style='white-space: nowrap;'>" . $d . "</span>";
-                    }
-                ),
-                array( 'db' => 'stamp',  'dt' => 3,
+                array( 'db' => 'stamp',  'dt' => 2,
                     'formatter' => function( $d, $row ) {
                         return "<span style='white-space: nowrap;'>" . date('Y-m-d H:i:s', strftime($d)) . "</span>";
                     }

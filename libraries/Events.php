@@ -493,7 +493,7 @@ class Events extends Engine
         // Run query
         //----------
 
-        $where = '';
+        $where = ' WHERE alerts.id = stamps.id';
         if ($filter != self::FLAG_ALL) {
             $flags_filter = array();
             if ($filter & self::FLAG_INFO)
@@ -502,18 +502,18 @@ class Events extends Engine
                 $flags_filter[] = 'flags & ' . self::FLAG_WARN;
             if ($filter & self::FLAG_CRIT)
                 $flags_filter[] = 'flags & ' . self::FLAG_CRIT;
-			$where = ' WHERE ('. implode(' OR ', $flags_filter) . ')';
+			$where = ' AND ('. implode(' OR ', $flags_filter) . ')';
 
             if (!($filter & self::FLAG_SENT))
                 $where .= ' AND NOT flags & ' . self::FLAG_SENT;
         }
 
         if ($start > 0 && $stop > 0)
-            $where .= " AND stamp BETWEEN $start AND $stop";
+            $where .= " AND stamps.stamp BETWEEN $start AND $stop";
         else if ($start > 0)
-            $where .= " AND stamp >= $start";
+            $where .= " AND stamps.stamp >= $start";
         else if ($stop > 0)
-            $where .= " AND stamp <= $stop";
+            $where .= " AND stamps.stamp <= $stop";
 
         // Check order parameter
         if ($order != 'DESC' && $order != 'ASC')
@@ -524,7 +524,7 @@ class Events extends Engine
         else
             $limit = " LIMIT $limit";
 
-        $sql = 'SELECT * FROM alerts' . $where . " ORDER BY id " . $order . " " . $limit;
+        $sql = 'SELECT * FROM alerts, stamps' . $where . " ORDER BY stamps.id " . $order . " " . $limit;
 
         try {
             $dbs = $this->db_handle->prepare($sql);
@@ -532,7 +532,7 @@ class Events extends Engine
 
             $result['events'] = $dbs->fetchAll(\PDO::FETCH_ASSOC);
 
-            $sql = 'SELECT count(id) AS total FROM alerts' . $where;
+            $sql = 'SELECT count(*) AS total FROM alerts, stamps' . $where;
             $dbs = $this->db_handle->prepare($sql);
             $dbs->execute();
 
@@ -543,6 +543,43 @@ class Events extends Engine
         }
 
         return $result;
+    }
+
+    /**
+    * Get last 24 hr summary.
+    *
+    * @return array
+    * @throws Engine_Exception
+    */
+
+    function get_last_24_hour_summary()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        $summary = array(
+            'info' => 0,
+            'warning' => 0,
+            'critical' => 0
+        );
+
+        $ts = new \DateTime();
+        $ts->add(\DateInterval::createFromDateString('24 hours ago'));
+        $start = $ts->getTimestamp();
+        $stop = -1;
+
+        // Should probably do a quicker direct SQL statement - TODO
+        $events = $this->get_events(self::FLAG_ALL, -1, $start, $stop);
+
+        foreach ($events['events'] as $event) {
+            $counter++;
+            if ($event['flags'] & self::FLAG_CRIT)
+                $summary['critical']++;
+            else if ($event['flags'] & self::FLAG_WARN)
+                $summary['warning']++;
+            else if ($event['flags'] & self::FLAG_INFO)
+                $summary['info']++;
+        }
+        return $summary;
     }
 
     /**
