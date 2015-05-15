@@ -502,7 +502,7 @@ class Events extends Engine
                 $flags_filter[] = 'flags & ' . self::FLAG_WARN;
             if ($filter & self::FLAG_CRIT)
                 $flags_filter[] = 'flags & ' . self::FLAG_CRIT;
-			$where = ' AND ('. implode(' OR ', $flags_filter) . ')';
+			$where .= ' AND ('. implode(' OR ', $flags_filter) . ')';
 
             if (!($filter & self::FLAG_SENT))
                 $where .= ' AND NOT flags & ' . self::FLAG_SENT;
