@@ -80,8 +80,12 @@ class Events extends ClearOS_Controller
         if ($this->session->userdata('events_flags') !== FALSE)
             $data['flags'] = $this->session->userdata('events_flags');
         $options['breadcrumb_links'] = array(
-            'settings' => array('url' => '/app/events/settings', 'tag' => lang('base_settings'))
+            'settings' => array('url' => '/app/events/settings', 'tag' => lang('base_settings')),
+            'delete' => array('url' => '#', 'tag' => lang('base_delete'), 'class' => 'events-delete')
         );
+        $data['events_delete_key'] = rand(0, 10000);
+        $this->session->set_userdata(array('events_delete_key' => $data['events_delete_key']));
+
         $this->page->view_form('events/summary', $data, lang('events_app_name'), $options);
     }
 
@@ -112,6 +116,49 @@ class Events extends ClearOS_Controller
     }
 
     /**
+     * Acknowledge all events
+     *
+     * @return void
+     */
+
+    function acknowledge()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        // Load dependencies
+        //------------------
+
+        $this->load->library('events/Events');
+
+        $this->events->acknowledge();
+
+        redirect('events');
+    }
+
+    /**
+     * Delete all records
+     *
+     * @return void
+     */
+
+    function delete($confirm_key = NULL)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        // Load dependencies
+        //------------------
+
+        $this->load->library('events/Events');
+
+        if ($confirm_key != NULL && $confirm_key == $this->session->userdata('events_delete_key')) {
+            $this->events->delete('all');
+            redirect('events');
+            return;
+        }
+        redirect('events');
+    }
+
+    /**
      * Ajax events info
      *
      * @return JSON
@@ -127,7 +174,9 @@ class Events extends ClearOS_Controller
         try {
             $this->load->library('events/Events');
             $this->load->library('events/SSP');
+            $this->load->library('date/Time');
 
+            date_default_timezone_set($this->time->get_time_zone());
 
             $sql_details = array(
                 'path' => '/var/lib/csplugin-sysmon/sysmon.db'

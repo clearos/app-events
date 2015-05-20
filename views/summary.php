@@ -40,7 +40,7 @@ $this->lang->load('base');
 // Anchors
 ///////////////////////////////////////////////////////////////////////////////
 
-$anchors = NULL;
+$anchors = anchor_custom('#', lang('events_acknowledge_all'), 'high', array('class' => 'events-acknowledge'));
 
 ///////////////////////////////////////////////////////////////////////////////
 // Headers
@@ -72,5 +72,21 @@ echo summary_table(
     $options
 );
 
+echo modal_confirm(
+    lang('base_confirmation_required'),
+    lang('events_confirm_delete'),
+    "/app/events/delete/" . $events_delete_key,
+    NULL,
+    NULL,
+    "events-modal-delete"
+);
+echo modal_confirm(
+    lang('base_confirmation_required'),
+    lang('events_acknowledge_all_info'),
+    "/app/events/acknowledge",
+    NULL,
+    NULL,
+    "events-modal-acknowledge"
+);
 // Used for flag selectors in JS
 echo "<input type='hidden' id='flags' class='theme-hidden' value='$flags' />";

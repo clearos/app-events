@@ -57,15 +57,19 @@ clearos_load_language('events');
 //--------
 
 use \clearos\apps\base\Configuration_File as Configuration_File;
+use \clearos\apps\base\Daemon as Daemon;
 use \clearos\apps\base\Engine as Engine;
 use \clearos\apps\base\File as File;
+use \clearos\apps\date\Time as Time;
 use \clearos\apps\events\SSP as SSP;
 use \clearos\apps\mail_notification\Mail_Notification as Mail_Notification;
 use \clearos\apps\network\Hostname as Hostname;
 
 clearos_load_library('base/Configuration_File');
+clearos_load_library('base/Daemon');
 clearos_load_library('base/Engine');
 clearos_load_library('base/File');
+clearos_load_library('date/Time');
 clearos_load_library('events/SSP');
 clearos_load_library('mail_notification/Mail_Notification');
 clearos_load_library('network/Hostname');
@@ -106,10 +110,12 @@ class Events extends Engine
     const FILE_CONFIG = '/etc/clearos/events.conf';
     const INSTANT_NOTIFICATION = 1;
     const DAILY_NOTIFICATION = 2;
-    const FLAG_INFO = 0x00000001;
-    const FLAG_WARN = 0x00000002;
-    const FLAG_CRIT = 0x00000004;
-    const FLAG_SENT = 0x00000100;
+    const FLAG_NULL = 0;
+    const FLAG_INFO = 0x1;
+    const FLAG_WARN = 0x2;
+    const FLAG_CRIT = 0x4;
+    const FLAG_NOTIFIED = 0x100;
+    const FLAG_RESOLVED = 0x200;
     const FLAG_ALL = 0xFFFFFFFF;
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -472,17 +478,18 @@ class Events extends Engine
     /**
      * Get events.
      *
-     * @param int     $filter filter for flags
-     * @param int     $limit  limit number of records returned
-     * @param int     $start  filter results based on this start timestamp
-     * @param int     $stop   filter results based on this stop timestamp
-     * @param String  $order  sort order (ASC or DESC)
+     * @param int     $has     filter for flags with any of these bits set
+     * @param int     $has_not exclude if any of these bits are set
+     * @param int     $limit   limit number of records returned
+     * @param int     $start   filter results based on this start timestamp
+     * @param int     $stop    filter results based on this stop timestamp
+     * @param String  $order   sort order (ASC or DESC)
      *
      * @return array
      * @throws Engine_Exception
      */
 
-    function get_events($filter = self::FLAG_ALL, $limit = -1, $start = -1, $stop = -1, $order = 'DESC')
+    function get_events($has = self::FLAG_ALL, $has_not = self::FLAG_NULL, $limit = -1, $start = -1, $stop = -1, $order = 'DESC')
     {
         clearos_profile(__METHOD__, __LINE__);
 
@@ -494,18 +501,24 @@ class Events extends Engine
         //----------
 
         $where = ' WHERE alerts.id = stamps.id';
-        if ($filter != self::FLAG_ALL) {
+        if ($has != self::FLAG_ALL) {
             $flags_filter = array();
-            if ($filter & self::FLAG_INFO)
+            if ($has & self::FLAG_INFO)
                 $flags_filter[] = 'flags & ' . self::FLAG_INFO;
-            if ($filter & self::FLAG_WARN)
+            if ($has & self::FLAG_WARN)
                 $flags_filter[] = 'flags & ' . self::FLAG_WARN;
-            if ($filter & self::FLAG_CRIT)
+            if ($has & self::FLAG_CRIT)
                 $flags_filter[] = 'flags & ' . self::FLAG_CRIT;
-			$where .= ' AND ('. implode(' OR ', $flags_filter) . ')';
+			$where .= ' AND (' . implode(' OR ', $flags_filter) . ')';
 
-            if (!($filter & self::FLAG_SENT))
-                $where .= ' AND NOT flags & ' . self::FLAG_SENT;
+        }
+        if ($has_not != self::FLAG_NULL) {
+            $flags_filter = array();
+            if ($has_not & self::FLAG_NOTIFIED)
+                $flags_filter[] = 'flags & ' . self::FLAG_NOTIFIED;
+            if ($has_not & self::FLAG_RESOLVED)
+                $flags_filter[] = 'flags & ' . self::FLAG_RESOLVED;
+			$where .= ' AND NOT ' . implode(' AND NOT ', $flags_filter);
         }
 
         if ($start > 0 && $stop > 0)
@@ -568,7 +581,7 @@ class Events extends Engine
         $stop = -1;
 
         // Should probably do a quicker direct SQL statement - TODO
-        $events = $this->get_events(self::FLAG_ALL, -1, $start, $stop);
+        $events = $this->get_events(self::FLAG_ALL, self::FLAG_NULL, -1, $start, $stop);
 
         foreach ($events['events'] as $event) {
             $counter++;
@@ -580,6 +593,73 @@ class Events extends Engine
                 $summary['info']++;
         }
         return $summary;
+    }
+
+    /**
+    * Acknowledge records.
+    *
+    * @param mixed  $record integer of record or 'all' for all records
+    *
+    * @return void
+    * @throws Engine_Exception
+    */
+
+    function acknowledge($record = 'all')
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        $this->_get_db_handle();
+
+        if ($record == 'all') {
+            $sql = "UPDATE alerts SET flags = flags + :acknowledge WHERE NOT flags & :acknowledge";
+            try {
+                $dbs = $this->db_handle->prepare($sql);
+                $dbs->bindValue(':acknowledge', self::FLAG_RESOLVED, \PDO::PARAM_INT);
+                $dbs->execute();
+            } catch(\PDOException $e) {
+                throw new Engine_Exception(clearos_exception_message($e), CLEAROS_ERROR);
+            }
+        } else {
+            // Individual records...TODO
+        }
+    }
+
+    /**
+    * Delete records.
+    *
+    * @param mixed  $record integer of record or 'all' for all records
+    *
+    * @return void
+    * @throws Engine_Exception
+    */
+
+    function delete($record = 'all')
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if ($record == 'all') {
+            $file = new File(self::DB_CONN, TRUE);
+            if ($file->exists())
+                $file->delete();
+
+            $daemon = new Daemon('clearsync');
+            $daemon->restart(FALSE);
+            return;
+        }
+
+        // TODO - We don't have a unique ID on stamps table yet
+        /*
+        $this->_get_db_handle();
+
+        $sql = "DELETE FROM stamps WHERE id = :id";
+        try {
+            $dbs = $this->db_handle->prepare($sql);
+            $dbs->bindValue(':id', $record, \PDO::PARAM_INT);
+            $dbs->execute();
+        } catch(\PDOException $e) {
+            throw new Engine_Exception(clearos_exception_message($e), CLEAROS_ERROR);
+        }
+        */
     }
 
     /**
@@ -596,13 +676,22 @@ class Events extends Engine
     {
         clearos_profile(__METHOD__, __LINE__);
 
-        $flags = 0;
+        $this->_get_db_handle();
+
+        $time = new Time();
+
+        date_default_timezone_set($time->get_time_zone());
+
+        $include = self::FLAG_NULL;
+        $exclude = self::FLAG_NULL;
         $limit = -1;
         if ($type == self::INSTANT_NOTIFICATION) {
             if (!$this->get_instant_status() || !$this->get_instant_email())
                 return;
             $email_list = $this->get_instant_email();
-            $flags = $this->get_instant_flags(FALSE);
+            $include = $this->get_instant_flags(FALSE);
+            // We want to exclude any events that have already been sent
+            $exclude = self::FLAG_NOTIFIED;
             $ts = new \DateTime();
             $ts->add(\DateInterval::createFromDateString('10 minutes ago'));
             $start = $ts->getTimestamp();
@@ -611,8 +700,7 @@ class Events extends Engine
             if (!$this->get_daily_status() || !$this->get_daily_email())
                 return;
             $email_list = $this->get_daily_email();
-            $flags = $this->get_daily_flags(FALSE);
-            $flags += self::FLAG_SENT;
+            $include = $this->get_daily_flags(FALSE);
             // Need to set some limit, no?
             $limit = 10000;
             if ($date == NULL)
@@ -630,6 +718,13 @@ class Events extends Engine
             return;
         }
 
+        $events = $this->get_events($include, $exclude, $limit, $start, $stop);
+        if (empty($events['events'])) {
+            echo "No new events\n";
+            return;
+        }
+
+        print_r($events);
         $mailer = new Mail_Notification();
         $hostname = new Hostname();
         $subject = lang('events_event_notification') . ' - ' . $hostname->get() . ($type == self::DAILY_NOTIFICATION ? " (" . $ts->format('M j, Y') . ")" : "");
@@ -637,23 +732,20 @@ class Events extends Engine
         $body .= "  <tr>\n";
         $body .= "    <th style='text-align: center;'></th>" .
                  "    <th style='text-align: left;'>" . lang('base_description') . "</th>" .
-                 "    <th style='text-align: left;'>" . lang('events_type') . "</th>" .
                  "    <th style='text-align: left;'>" . lang('base_timestamp') . "</th>\n";
         $body .= "  <tr>\n";
-        $events = $this->get_events($flags, $limit, $start, $stop);
         $counter = 0;
 
         $records = array();
         foreach ($events['events'] as $event) {
             $colour = '#608921'; 
-            if ($event['flags'] & 0x2)
-                $colour = '#f39c12'; 
-            else if ($event['flags'] & 0x3)
+            if ($event['flags'] & self::FLAG_CRIT)
                 $colour = '#dd4b39'; 
+            else if ($event['flags'] & self::FLAG_WARN)
+                $colour = '#f39c12'; 
             $body .= "  <tr style='background-color: " . ($counter % 2 ? "#f5f5f5" : "#fff") . ";'>\n";
             $body .= "    <td width='2%' style='border-top: 1px solid #ddd; text-align: center;'><span style='color: $colour;'>&#x2b24;</span></td>\n" .
-                     "    <td width='58%' style='border-top: 1px solid #ddd; text-align: left;'>" . $event['desc'] . "</td>\n" .
-                     "    <td width='15%' style='border-top: 1px solid #ddd; text-align: left;'>" . $event['type'] . "</td>\n" .
+                     "    <td width='73%' style='border-top: 1px solid #ddd; text-align: left;'>" . $event['desc'] . "</td>\n" .
                      "    <td width='25%' style='border-top: 1px solid #ddd; text-align: left;'>" . date('Y-m-d H:i:s', strftime($event['stamp'])) . "</td>\n";
             $body .= "  </tr>\n";
             $counter++;
@@ -671,8 +763,23 @@ class Events extends Engine
 
         $mailer->send();
 
-        // TODO
-        // Take $records array and set FLAG_SENT bit
+        $records = array_unique($records);
+        $sql = "UPDATE alerts SET `flags` = `flags` + :notified WHERE id = :id";
+        try {
+            foreach ($records as $id) {
+                $dbs = $this->db_handle->prepare($sql);
+                $dbs->bindValue(':notified', self::FLAG_NOTIFIED, \PDO::PARAM_INT);
+                $dbs->bindValue(':id', $id, \PDO::PARAM_INT);
+                $dbs->execute();
+                echo "UPDATE alerts SET `flags` = `flags` + " . self::FLAG_NOTIFIED . " WHERE id = " . $id . ";\n";
+            }
+        } catch(\PDOException $e) {
+            echo clearos_exception_message($e) . "\n";
+            clearos_log(
+                'events',
+                'Error occurred setting notify flags: ' . clearos_exception_message($e) 
+            );
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////

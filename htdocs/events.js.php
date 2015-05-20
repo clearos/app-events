@@ -54,6 +54,14 @@ var lang_show_warning = '<?php echo lang('events_show_warning'); ?>';
 var lang_show_critical = '<?php echo lang('events_show_critical'); ?>';
 
 $(document).ready(function() {
+    $('.events-delete').on('click', function (e) {
+        e.preventDefault();
+        clearos_modal_infobox_open('events-modal-delete');
+    });
+    $('.events-acknowledge').on('click', function (e) {
+        e.preventDefault();
+        clearos_modal_infobox_open('events-modal-acknowledge');
+    });
     $('#events_list').on('draw.dt', function () {
         // Hack..FIXME...aligns icons up to look a bit better
         $('#events_list tr td:first-child').css('padding', '8px 0px 8px 15px');
