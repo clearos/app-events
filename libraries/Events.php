@@ -552,7 +552,7 @@ class Events extends Engine
             $result['total'] = $dbs->fetch()[0];
 
         } catch(\Exception $e) {
-            throw new Engine_Exception($e->getMessage());
+            throw new Engine_Exception(clearos_exception_message($e), CLEAROS_ERROR);
         }
 
         return $result;
@@ -562,7 +562,6 @@ class Events extends Engine
     * Get last 24 hr summary.
     *
     * @return array
-    * @throws Engine_Exception
     */
 
     function get_last_24_hour_summary()
@@ -581,7 +580,16 @@ class Events extends Engine
         $stop = -1;
 
         // Should probably do a quicker direct SQL statement - TODO
-        $events = $this->get_events(self::FLAG_ALL, self::FLAG_NULL, -1, $start, $stop);
+        try {
+            $events = $this->get_events(self::FLAG_ALL, self::FLAG_NULL, -1, $start, $stop);
+        } catch(\Exception $e) {
+            // We don't ever want to throw exception here...entire dashboard would break.
+            return array(
+                'info' => lang('base_unknown'),
+                'warning' => lang('base_unknown'),
+                'critical' => lang('base_unknown')
+            );
+        }
 
         foreach ($events['events'] as $event) {
             $counter++;
@@ -854,7 +862,7 @@ class Events extends Engine
 				array( \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION )
 			);
         } catch(\PDOException $e) {
-            throw new Engine_Exception($e->getMessage());
+            throw new Engine_Exception(clearos_exception_message($e), CLEAROS_ERROR);
         }
     }
 
