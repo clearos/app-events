@@ -83,7 +83,7 @@ $app['core_file_manifest'] = array(
 
 $app['dashboard_widgets'] = array(
     $app['category'] => array(
-        'events/dashboard_widgets/last_24' => array(
+        'events/events_dashboard/last_24' => array(
             'title' => lang('events_last_24_hours'),
             'restricted' => FALSE,
         )

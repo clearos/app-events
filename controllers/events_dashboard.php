@@ -29,7 +29,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-class Dashboard_Widgets extends ClearOS_Controller
+class Events_Dashboard extends ClearOS_Controller
 {
     /**
      * Dashboard default controller.
