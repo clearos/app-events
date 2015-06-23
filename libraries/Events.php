@@ -116,6 +116,7 @@ class Events extends Engine
     const FLAG_CRIT = 0x4;
     const FLAG_NOTIFIED = 0x100;
     const FLAG_RESOLVED = 0x200;
+    const FLAG_AUTO_RESOLVED = 0x400;
     const FLAG_ALL = 0xFFFFFFFF;
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -518,6 +519,8 @@ class Events extends Engine
                 $flags_filter[] = 'flags & ' . self::FLAG_NOTIFIED;
             if ($has_not & self::FLAG_RESOLVED)
                 $flags_filter[] = 'flags & ' . self::FLAG_RESOLVED;
+            if ($has_not & self::FLAG_AUTO_RESOLVED)
+                $flags_filter[] = 'flags & ' . self::FLAG_AUTO_RESOLVED;
 			$where .= ' AND NOT ' . implode(' AND NOT ', $flags_filter);
         }
 
@@ -619,10 +622,11 @@ class Events extends Engine
         $this->_get_db_handle();
 
         if ($record == 'all') {
-            $sql = "UPDATE alerts SET flags = flags + :acknowledge WHERE NOT flags & :acknowledge";
+            $sql = "UPDATE alerts SET flags = flags + :acknowledge WHERE NOT flags & :acknowledge AND NOT flags & :auto_resolve";
             try {
                 $dbs = $this->db_handle->prepare($sql);
                 $dbs->bindValue(':acknowledge', self::FLAG_RESOLVED, \PDO::PARAM_INT);
+                $dbs->bindValue(':auto_resolve', self::FLAG_AUTO_RESOLVED, \PDO::PARAM_INT);
                 $dbs->execute();
             } catch(\PDOException $e) {
                 throw new Engine_Exception(clearos_exception_message($e), CLEAROS_ERROR);
