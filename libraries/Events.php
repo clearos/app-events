@@ -110,6 +110,7 @@ class Events extends Engine
     const FILE_CONFIG = '/etc/clearos/events.conf';
     const INSTANT_NOTIFICATION = 1;
     const DAILY_NOTIFICATION = 2;
+    const TYPE_DEFAULT = 'SYS_DEFAULT';
     const FLAG_NULL = 0;
     const FLAG_INFO = 0x1;
     const FLAG_WARN = 0x2;
@@ -649,29 +650,25 @@ class Events extends Engine
     {
         clearos_profile(__METHOD__, __LINE__);
 
-        if ($record == 'all') {
-            $file = new File(self::DB_CONN, TRUE);
-            if ($file->exists())
-                $file->delete();
-
-            $daemon = new Daemon('clearsync');
-            $daemon->restart(FALSE);
-            return;
-        }
-
-        // TODO - We don't have a unique ID on stamps table yet
-        /*
         $this->_get_db_handle();
 
-        $sql = "DELETE FROM stamps WHERE id = :id";
         try {
             $dbs = $this->db_handle->prepare($sql);
-            $dbs->bindValue(':id', $record, \PDO::PARAM_INT);
+
+            $sql = "DELETE FROM stamps";
+            if ($record != 'all') {
+                $sql = "DELETE FROM stamps WHERE id = :id";
+                $dbs->bindValue(':id', $record, \PDO::PARAM_INT);
+            }
             $dbs->execute();
+
+            if ($record == 'all') {
+                $sql = "DELETE FROM alerts";
+                $dbs->execute();
+            }
         } catch(\PDOException $e) {
             throw new Engine_Exception(clearos_exception_message($e), CLEAROS_ERROR);
         }
-        */
     }
 
     /**
