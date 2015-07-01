@@ -95,7 +95,7 @@ class SSP {
 	{
 		$limit = '';
 		if ( isset($request['start']) && $request['length'] != -1 ) {
-			$limit = "LIMIT ".intval($request['start']).", ".intval($request['length']);
+			$limit = "LIMIT " . intval($request['start']).", " . intval($request['length']);
 		}
 		return $limit;
 	}
@@ -178,7 +178,7 @@ class SSP {
 			}
 		}
 		// Combine the filters into a single string
-        $where = "alerts.id = stamps.id";
+        $where = "alerts.id = stamps.aid";
 
 		if ( count( $globalSearch ) ) {
 			$where = '('.implode(' OR ', $globalSearch).')';
@@ -259,7 +259,7 @@ class SSP {
 		$resTotalLength = self::sql_exec( $db,
 			"SELECT COUNT(alerts.id)
 			 FROM `$table`,`stamps`
-             WHERE alerts.id = stamps.id"
+             WHERE alerts.id = stamps.aid"
 		);
 
 		$recordsTotal = $resTotalLength[0][0];
@@ -399,7 +399,6 @@ class SSP {
 			$sql = $bindings;
 		}
 		$stmt = $db->prepare( $sql );
-		//echo $sql;
 		// Bind parameters
 		if ( is_array( $bindings ) ) {
 			for ( $i=0, $ien=count($bindings) ; $i<$ien ; $i++ ) {

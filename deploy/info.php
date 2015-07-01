@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 $app['basename'] = 'events';
-$app['version'] = '2.1.0';
+$app['version'] = '2.1.1';
 $app['release'] = '2';
 $app['vendor'] = 'ClearFoundation';
 $app['packager'] = 'ClearFoundation';

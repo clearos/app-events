@@ -115,35 +115,56 @@ class Event_Utils extends Engine
     /**
      * Add an event to the events database.
      *
-     * @param string $type     type
-     * @param int    $severity severity
+     * @param string $description  description
+     * @param string $severity     severity
+     * @param string $type         type
+     * @param string $basename     basename
+     * @param string $user         user
+     * @param string $uuid         UUID
+     * @param bool   $persistent   persistent
+     * @param string $origin       origin
+     * @param bool   $auto_resolve auto resolve
      *
      */
 
     public static function add_event(
-        $type = NULL, $severity = NULL, $basename = NULL,
+        $description = NULL, $severity = NULL, $type = NULL, $basename = NULL,
         $user = NULL, $uuid = NULL, $persistent = FALSE,
         $origin = NULL, $auto_resolve = FALSE
     )
     {
         clearos_profile(__METHOD__, __LINE__);
 
+        if ($basename == NULL) {
+            // Bit of a hack to get basename, but we may need basename to create unique UUID for events
+            // using the common TYPE_DEFAULT type
+            list(, $caller) = debug_backtrace(FALSE);
+            if (preg_match('/.*\\\apps\\\([a-z\_]+)\\\.*/', $caller['class'], $match))
+                $basename = $match[1];
+        }
+
         try {
+            if (Event_Utils::is_valid_description($description) === FALSE)
+                throw new Validation_Exception(lang('events_description_invalid'));
+
             if (Event_Utils::is_valid_type($type) === FALSE)
                 throw new Validation_Exception(lang('events_type_invalid'));
-
-            if ($type == NULL)
-                $type = '-t ' . Events::TYPE_DEFAULT;
-            else
-                $type = '-t ' . $type;
 
             if (Event_Utils::is_valid_severity($severity) === FALSE)
                 throw new Validation_Exception(lang('events_severity_invalid'));
 
             if ($severity == NULL)
-                $severity = '-f ' . Events::FLAG_INFO;
+                $severity = '-l ' . Events::SEVERITY_INFO;
             else
-                $severity = '-f ' . $severity;
+                $severity = '-l ' . $severity;
+
+            if ($type == NULL) {
+                $type = '-t ' . Events::TYPE_DEFAULT;
+                // If using the default type, set uuid to unique ID, otherwise, they will override each other
+                $uuid = md5($basename . $description);
+            } else {
+                $type = '-t ' . $type;
+            }
 
             if (Event_Utils::is_valid_basename($basename) === FALSE)
                 throw new Validation_Exception(lang('events_basename_invalid'));
@@ -184,10 +205,10 @@ class Event_Utils extends Engine
                 $auto_resolve = '-a';
 
             $shell = new Shell();
-            $optinos = array('validate_exit_code' => FALSE);
+            $options = array('validate_exit_code' => FALSE);
             $exitcode = $shell->execute(
                 self::COMMAND_EVENTS_CTRL,
-                " -s $type $severity $basename $persistent $user $uuid $origin $auto_resolve",
+                " -s $type $severity $basename $persistent $user $uuid $origin $auto_resolve " . escapeshellarg($description),
                 TRUE,
                 $options
             );
@@ -203,7 +224,7 @@ class Event_Utils extends Engine
      *
      * @param string $type type of event
      *
-     * @return string error message if severity is invalid
+     * @return string error message if type is invalid
      */
 
     public static function is_valid_type($type)
@@ -219,9 +240,27 @@ class Event_Utils extends Engine
     }
 
     /**
+     * Validates event description.
+     *
+     * @param string $description description of event
+     *
+     * @return string error message if description is invalid
+     */
+
+    public static function is_valid_description($description)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if ($description == NULL || $description == '')
+            return FALSE; 
+
+        return TRUE;
+    }
+
+    /**
      * Validates severity flag.
      *
-     * @param int $severity severity
+     * @param string $severity severity
      *
      * @return string error message if severity is invalid
      */
@@ -232,7 +271,7 @@ class Event_Utils extends Engine
 
         if ($severity == NULL)
             return TRUE; 
-        else if ($severity < 0 || $severity > 8)
+        else if (!preg_match('/INFO|WARN|CRIT/', $severity))
             return FALSE;
 
         return TRUE;

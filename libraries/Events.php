@@ -112,7 +112,7 @@ class Events extends Engine
     const FILE_CONFIG = '/etc/clearos/events.conf';
     const INSTANT_NOTIFICATION = 1;
     const DAILY_NOTIFICATION = 2;
-    const TYPE_DEFAULT = 'SYS_DEFAULT';
+    const TYPE_DEFAULT = 'SYS_INFO';
     const FLAG_NULL = 0;
     const FLAG_INFO = 0x1;
     const FLAG_WARN = 0x2;
@@ -121,6 +121,9 @@ class Events extends Engine
     const FLAG_RESOLVED = 0x200;
     const FLAG_AUTO_RESOLVED = 0x400;
     const FLAG_ALL = 0xFFFFFFFF;
+    const SEVERITY_INFO = 'NORM';
+    const SEVERITY_WARNING = 'WARN';
+    const SEVERITY_CRITICAL = 'CRIT';
 
     ///////////////////////////////////////////////////////////////////////////////
     // V A R I A B L E S
@@ -141,7 +144,6 @@ class Events extends Engine
     function __construct()
     {
         clearos_profile(__METHOD__, __LINE__);
-        Event_Utils::add_event('bob', 1);
     }
 
     /**
@@ -505,7 +507,7 @@ class Events extends Engine
         // Run query
         //----------
 
-        $where = ' WHERE alerts.id = stamps.id';
+        $where = ' WHERE alerts.id = stamps.aid';
         if ($has != self::FLAG_ALL) {
             $flags_filter = array();
             if ($has & self::FLAG_INFO)
@@ -656,17 +658,18 @@ class Events extends Engine
         $this->_get_db_handle();
 
         try {
-            $dbs = $this->db_handle->prepare($sql);
 
             $sql = "DELETE FROM stamps";
             if ($record != 'all') {
-                $sql = "DELETE FROM stamps WHERE id = :id";
+                $sql = "DELETE FROM stamps WHERE aid = :id";
                 $dbs->bindValue(':id', $record, \PDO::PARAM_INT);
             }
+            $dbs = $this->db_handle->prepare($sql);
             $dbs->execute();
 
             if ($record == 'all') {
                 $sql = "DELETE FROM alerts";
+                $dbs = $this->db_handle->prepare($sql);
                 $dbs->execute();
             }
         } catch(\PDOException $e) {
@@ -731,10 +734,8 @@ class Events extends Engine
         }
 
         $events = $this->get_events($include, $exclude, $limit, $start, $stop);
-        if (empty($events['events'])) {
-            echo "No new events\n";
+        if (empty($events['events']))
             return;
-        }
 
         print_r($events);
         $mailer = new Mail_Notification();
@@ -783,10 +784,8 @@ class Events extends Engine
                 $dbs->bindValue(':notified', self::FLAG_NOTIFIED, \PDO::PARAM_INT);
                 $dbs->bindValue(':id', $id, \PDO::PARAM_INT);
                 $dbs->execute();
-                echo "UPDATE alerts SET `flags` = `flags` + " . self::FLAG_NOTIFIED . " WHERE id = " . $id . ";\n";
             }
         } catch(\PDOException $e) {
-            echo clearos_exception_message($e) . "\n";
             clearos_log(
                 'events',
                 'Error occurred setting notify flags: ' . clearos_exception_message($e) 
