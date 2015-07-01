@@ -1,7 +1,9 @@
 #!/bin/sh
 
-# Sudoers
-#--------
+# Add sudoers entries
+#--------------------
+
+/usr/sbin/addsudo /usr/bin/eventsctl
 
 # TODO: move this to clearsync
 LINE=`grep "^Cmnd_Alias CLEARSYNC" /etc/sudoers 2>/dev/null`

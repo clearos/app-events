@@ -62,6 +62,7 @@ use \clearos\apps\base\Engine as Engine;
 use \clearos\apps\base\File as File;
 use \clearos\apps\date\Time as Time;
 use \clearos\apps\events\SSP as SSP;
+use \clearos\apps\events\Event_Utils as Event_Utils;
 use \clearos\apps\mail_notification\Mail_Notification as Mail_Notification;
 use \clearos\apps\network\Hostname as Hostname;
 
@@ -71,6 +72,7 @@ clearos_load_library('base/Engine');
 clearos_load_library('base/File');
 clearos_load_library('date/Time');
 clearos_load_library('events/SSP');
+clearos_load_library('events/Event_Utils');
 clearos_load_library('mail_notification/Mail_Notification');
 clearos_load_library('network/Hostname');
 
@@ -139,6 +141,7 @@ class Events extends Engine
     function __construct()
     {
         clearos_profile(__METHOD__, __LINE__);
+        Event_Utils::add_event('bob', 1);
     }
 
     /**

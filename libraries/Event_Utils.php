@@ -160,31 +160,39 @@ class Event_Utils extends Engine
                 $user = '';
             else
                 $user = '-u ' . $user;
-        /*
-        Send an alert:
-          -p, --persistent
-            Enable persistent flag.
-          -u <user>, --user <user>
-            Specify an optional username or UID.
-          -U <uuid>, --uuid <uuid>
-            Specify an optional UUID.
-          -o <origin>, --origin <origin>
-            Specify an optional origin.
-          -a, --auto-resolve
-            Alert will auto-resolve (ex: firewall panic mode).
-        */
 
+            if (Event_Utils::is_valid_uuid($uuid) === FALSE)
+                throw new Validation_Exception(lang('events_uuid_invalid'));
+
+            if ($uuid == NULL)
+                $uuid = '';
+            else
+                $uuid = '-U ' . $uuid;
+
+            if (Event_Utils::is_valid_origin($origin) === FALSE)
+                throw new Validation_Exception(lang('events_origin_invalid'));
+
+            if ($origin == NULL)
+                $origin = '';
+            else
+                $origin = '-o ' . $origin;
+
+            if ($persistent === TRUE)
+                $origin = '-p';
+
+            if ($auto_resolve === TRUE)
+                $auto_resolve = '-a';
 
             $shell = new Shell();
+            $optinos = array('validate_exit_code' => FALSE);
             $exitcode = $shell->execute(
                 self::COMMAND_EVENTS_CTRL,
                 " -s $type $severity $basename $persistent $user $uuid $origin $auto_resolve",
-                FALSE
+                TRUE,
+                $options
             );
 
-            if ($exitcode != 0)
-                return $list;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             clearos_log('events', "Failed to add log event: " . clearos_exception_message($e));
         }
         
@@ -233,7 +241,7 @@ class Event_Utils extends Engine
     /**
      * Validates basename.
      *
-     * @param int $basename basename
+     * @param string $basename basename
      *
      * @return string error message if basename is invalid
      */
@@ -244,7 +252,67 @@ class Event_Utils extends Engine
 
         if ($basename == NULL)
             return TRUE; 
-        else if (!preg_match('/[a-z\_]+/', $basename))
+        else if (empty($basename))
+            return FALSE;
+
+        return TRUE;
+    }
+
+    /**
+     * Validates origin.
+     *
+     * @param string $origin origin
+     *
+     * @return string error message if origin is invalid
+     */
+
+    public static function is_valid_origin($origin)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if ($origin == NULL)
+            return TRUE; 
+        else if (empty($origin))
+            return FALSE;
+
+        return TRUE;
+    }
+
+    /**
+     * Validates user ID.
+     *
+     * @param string $user user
+     *
+     * @return string error message if user ID is invalid
+     */
+
+    public static function is_valid_user($user)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if ($user == NULL)
+            return TRUE; 
+        else if (empty($user))
+            return FALSE;
+
+        return TRUE;
+    }
+
+    /**
+     * Validates uuid.
+     *
+     * @param String $uuid uuid
+     *
+     * @return string error message if uuid is invalid
+     */
+
+    public static function is_valid_uuid($uuid)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if ($uuid == NULL)
+            return TRUE; 
+        else if (!preg_match('/[a-z\_]+/', $uuid))
             return FALSE;
 
         return TRUE;
