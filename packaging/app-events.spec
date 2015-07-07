@@ -2,7 +2,7 @@
 Name: app-events
 Epoch: 1
 Version: 2.1.1
-Release: 2%{dist}
+Release: 3%{dist}
 Summary: Events and Notifications
 License: GPLv3
 Group: ClearOS/Apps
