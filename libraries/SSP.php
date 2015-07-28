@@ -196,9 +196,13 @@ class SSP {
                 $flags_filter[] = 'alerts.flags & 2';
             if ($request['flags'] & 4)
                 $flags_filter[] = 'alerts.flags & 4';
-			$where = $where === '' ?
-				implode(' OR ', $flags_filter) :
-				$where .' AND ('. implode(' OR ', $flags_filter) . ')';
+            // If no flags are set, make sure no resuls are returned
+            if (empty($flags_filter))
+                $where .= ' AND alerts.flags == -1';
+            else
+                $where = $where === '' ?
+                    implode(' OR ', $flags_filter) :
+                    $where .' AND ('. implode(' OR ', $flags_filter) . ')';
         }
 		if ( $where !== '' ) {
 			$where = 'WHERE '.$where;
@@ -231,7 +235,6 @@ class SSP {
 		$where = self::filter( $request, $columns, $bindings );
 
 		// Main query to actually get the data
-			//"SELECT COUNT(`{$primaryKey}`)
 		$results = self::sql_exec( $db, $bindings,
 			"SELECT COUNT(alerts.id)
 			 FROM `$table`,`stamps`

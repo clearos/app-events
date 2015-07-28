@@ -1,7 +1,7 @@
 
 Name: app-events
 Epoch: 1
-Version: 2.1.6
+Version: 2.1.7
 Release: 1%{dist}
 Summary: Events and Notifications
 License: GPLv3
@@ -57,6 +57,8 @@ fi
 
 [ -x /usr/clearos/apps/events/deploy/upgrade ] && /usr/clearos/apps/events/deploy/upgrade
 
+
+
 exit 0
 
 %preun
@@ -69,6 +71,8 @@ if [ $1 -eq 0 ]; then
     logger -p local6.notice -t installer 'app-events-core - uninstalling'
     [ -x /usr/clearos/apps/events/deploy/uninstall ] && /usr/clearos/apps/events/deploy/uninstall
 fi
+
+
 
 exit 0
 
