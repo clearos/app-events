@@ -119,18 +119,16 @@ class Event_Utils extends Engine
      * @param string $severity     severity
      * @param string $type         type
      * @param string $basename     basename
+     * @param bool   $auto_resolve auto resolve
      * @param string $user         user
      * @param string $uuid         UUID
-     * @param bool   $persistent   persistent
      * @param string $origin       origin
-     * @param bool   $auto_resolve auto resolve
      *
      */
 
     public static function add_event(
         $description = NULL, $severity = NULL, $type = NULL, $basename = NULL,
-        $user = NULL, $uuid = NULL, $persistent = FALSE,
-        $origin = NULL, $auto_resolve = FALSE
+        $auto_resolve = FALSE, $user = NULL, $uuid = NULL, $origin = NULL
     )
     {
         clearos_profile(__METHOD__, __LINE__);
@@ -198,17 +196,14 @@ class Event_Utils extends Engine
             else
                 $origin = '-o ' . $origin;
 
-            if ($persistent === TRUE)
-                $origin = '-p';
-
             if ($auto_resolve === TRUE)
-                $auto_resolve = '-a';
+                $auto_resolve = '--auto-resolve';
 
             $shell = new Shell();
             $options = array('validate_exit_code' => FALSE);
             $exitcode = $shell->execute(
                 self::COMMAND_EVENTS_CTRL,
-                " -s $type $severity $basename $persistent $user $uuid $origin $auto_resolve " . escapeshellarg($description),
+                " -s $type $severity $basename $user $uuid $origin $auto_resolve " . escapeshellarg($description),
                 TRUE,
                 $options
             );
@@ -217,6 +212,32 @@ class Event_Utils extends Engine
             clearos_log('events', "Failed to add log event: " . clearos_exception_message($e));
         }
         
+    }
+
+    /**
+     * Resolve an event.
+     *
+     * @param string $type type
+     *
+     */
+
+    public static function resolve_event($type)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        try {
+            $shell = new Shell();
+            $options = array('validate_exit_code' => FALSE);
+            $exitcode = $shell->execute(
+                self::COMMAND_EVENTS_CTRL,
+                " -r -t $type",
+                TRUE,
+                $options
+            );
+
+        } catch (\Exception $e) {
+            clearos_log('events', "Failed to resolve log event: " . clearos_exception_message($e));
+        }
     }
 
     /**
