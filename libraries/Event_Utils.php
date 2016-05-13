@@ -292,7 +292,7 @@ class Event_Utils extends Engine
 
         if ($severity == NULL)
             return TRUE; 
-        else if (!preg_match('/INFO|WARN|CRIT/', $severity))
+        else if (!preg_match('/NORM|WARN|CRIT/', $severity))
             return FALSE;
 
         return TRUE;
