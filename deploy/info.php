@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 $app['basename'] = 'events';
-$app['version'] = '2.1.9';
+$app['version'] = '2.1.11';
 $app['release'] = '1';
 $app['vendor'] = 'ClearFoundation';
 $app['packager'] = 'ClearFoundation';
@@ -39,7 +39,7 @@ $app['core_obsoletes'] = array(
 $app['core_requires'] = array(
     'clearsync',
     'csplugin-filewatch',
-    'csplugin-events',
+    'csplugin-events => 1.0-24',
 );
 
 $app['core_directory_manifest'] = array(

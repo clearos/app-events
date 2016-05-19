@@ -96,6 +96,9 @@ class Event_Utils extends Engine
     ///////////////////////////////////////////////////////////////////////////////
 
     const COMMAND_EVENTS_CTRL = '/usr/bin/eventsctl';
+    const SEVERITY_INFO = 'NORM';
+    const SEVERITY_WARNING = 'WARN';
+    const SEVERITY_CRITICAL = 'CRIT';
 
     ///////////////////////////////////////////////////////////////////////////////
     // M E T H O D S
@@ -110,6 +113,54 @@ class Event_Utils extends Engine
     public function __construct()
     {
         clearos_profile(__METHOD__, __LINE__);
+    }
+
+    /**
+     * Add an INFO event to the events database.
+     *
+     * @param string $description  description
+     * @param string $type         type
+     * @param bool   $auto_resolve auto resolve
+     *
+     */
+
+    public static function info($description, $type, $auto_resolve = FALSE)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        self::add_event($description, self::SEVERITY_INFO, $type, self::guess_basename($type), $auto_resolve, NULL, NULL, NULL);
+    }
+
+    /**
+     * Add an WARNING event to the events database.
+     *
+     * @param string $description  description
+     * @param string $type         type
+     * @param bool   $auto_resolve auto resolve
+     *
+     */
+
+    public static function warning($description, $type, $auto_resolve = FALSE)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        self::add_event($description, self::SEVERITY_WARNING, $type, self::guess_basename($type), $auto_resolve, NULL, NULL, NULL);
+    }
+
+    /**
+     * Add a CRITIAL event to the events database.
+     *
+     * @param string $description  description
+     * @param string $type         type
+     * @param bool   $auto_resolve auto resolve
+     *
+     */
+
+    public static function critical($description, $type, $auto_resolve = FALSE)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        self::add_event($description, self::SEVERITY_CRITICAL, $type, self::guess_basename($type), $auto_resolve, NULL, NULL, NULL);
     }
 
     /**
@@ -161,6 +212,26 @@ class Event_Utils extends Engine
                 // If using the default type, set uuid to unique ID, otherwise, they will override each other
                 $uuid = md5($basename . $description);
             } else {
+                // Let's make sure type exists from base package and register it just in case
+                if ($basename != NULL) {
+                    $app_base = clearos_app_base($basename);
+                    $info_file = $app_base . '/deploy/info.php';
+                    if (file_exists($info_file)) {
+                        include $info_file;
+                        if (in_array($type, $app['event_types'])) {
+                            $shell = new Shell();
+                            $options = array('validate_exit_code' => FALSE);
+                            $exitcode = $shell->execute(
+                                self::COMMAND_EVENTS_CTRL,
+                                "-R -t $type -b $basename",
+                                TRUE,
+                                $options
+                            );
+                        } else {
+                            clearos_log('events', "Event $type not found in base package $basename.");
+                        }
+                    }
+                }
                 $type = '-t ' . $type;
             }
 
@@ -376,6 +447,24 @@ class Event_Utils extends Engine
             return FALSE;
 
         return TRUE;
+    }
+
+    /**
+     * Gets basename based on type.
+     *
+     * @param String $type type
+     *
+     * @return string
+     */
+
+    private static function guess_basename($type)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if ($type == NULL || !preg_match("/.*_.*/", $type))
+            return NULL; 
+
+        return strtolower(substr($type, 0, strpos($type, "_")));  
     }
 
 }

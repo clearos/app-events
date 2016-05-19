@@ -1,7 +1,7 @@
 
 Name: app-events
 Epoch: 1
-Version: 2.1.9
+Version: 2.1.11
 Release: 1%{dist}
 Summary: Events and Notifications
 License: GPLv3
@@ -21,7 +21,7 @@ Group: ClearOS/Libraries
 Requires: app-base-core
 Requires: clearsync
 Requires: csplugin-filewatch
-Requires: csplugin-events
+Requires: csplugin-events => 1.0-24
 Obsoletes: app-clearsync-core
 
 %description core
