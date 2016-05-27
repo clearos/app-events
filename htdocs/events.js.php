@@ -127,15 +127,13 @@ function toggle_fields() {
             $('.instant-required').attr('disabled', false);
         } else {
             $('.instant-required').attr('disabled', true);
-            $('.instant-required').attr('checked', false);
-            $('.instant-required').val('');
+            $('.instant-required').prop('checked', false);
         }
         if ($('#daily_status').val() == 1) {
             $('.daily-required').attr('disabled', false);
         } else {
             $('.daily-required').attr('disabled', true);
-            $('.daily-required').attr('checked', false);
-            $('.daily-required').val('');
+            $('.daily-required').prop('checked', false);
         }
     } else {
         $('.status-required').attr('disabled', true);
