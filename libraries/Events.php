@@ -477,7 +477,8 @@ class Events extends Engine
             30 => lang('events_older_than_1_month'),
             40 => lang('events_older_than_3_months'),
             50 => lang('events_older_than_6_months'),
-            60 => lang('events_older_than_1_year')
+            60 => lang('events_older_than_1_year'),
+            1000 => lang('events_never')
         );
         return $options;
     }
@@ -643,6 +644,71 @@ class Events extends Engine
     }
 
     /**
+    * Purge records.
+    *
+    * @param mixed  $timestamp timestamp
+    *
+    * @return void
+    * @throws Engine_Exception
+    */
+
+    function purge_records($date = 0)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        $this->_get_db_handle();
+
+        $unix_timestamp = 0;
+
+        if ($date == 0) {
+            $purge = $this->get_autopurge();
+            switch ((int)$purge) {
+                case 10:
+                    $unix_timestamp = strtotime("-1 day");
+                    break;
+                case 20:
+                    $unix_timestamp = strtotime("-1 week");
+                    break;
+                case 30:
+                    $unix_timestamp = strtotime("-1 month");
+                    break;
+                case 40:
+                    $unix_timestamp = strtotime("-3 months");
+                    break;
+                case 50:
+                    $unix_timestamp = strtotime("-6 months");
+                    break;
+                case 60:
+                    $unix_timestamp = strtotime("-1 year");
+                    break;
+                default:
+                    return;
+		
+            }
+        } else {
+            $unix_timestamp = strtotime($date);
+        }
+
+        if ($unix_timestamp == 0)
+            return;
+
+        try {
+
+            $sql = "DELETE FROM stamps WHERE stamp < :stamp";
+            $dbs = $this->db_handle->prepare($sql);
+            $dbs->bindValue(':stamp', $unix_timestamp, \PDO::PARAM_INT);
+            $dbs->execute();
+
+            $sql = "DELETE FROM alerts WHERE updated < :stamp";
+            $dbs = $this->db_handle->prepare($sql);
+            $dbs->bindValue(':stamp', $unix_timestamp, \PDO::PARAM_INT);
+            $dbs->execute();
+        } catch(\PDOException $e) {
+            throw new Engine_Exception(clearos_exception_message($e), CLEAROS_ERROR);
+        }
+    }
+
+    /**
     * Delete records.
     *
     * @param mixed  $record integer of record or 'all' for all records
@@ -659,12 +725,15 @@ class Events extends Engine
 
         try {
 
-            $sql = "DELETE FROM stamps";
             if ($record != 'all') {
                 $sql = "DELETE FROM stamps WHERE aid = :id";
+                $dbs = $this->db_handle->prepare($sql);
                 $dbs->bindValue(':id', $record, \PDO::PARAM_INT);
+            } else {
+                $sql = "DELETE FROM stamps";
+                $dbs = $this->db_handle->prepare($sql);
             }
-            $dbs = $this->db_handle->prepare($sql);
+
             $dbs->execute();
 
             if ($record == 'all') {
@@ -728,6 +797,9 @@ class Events extends Engine
             $start = $ts->getTimestamp();
             $ts->setTime(23, 59, 59);
             $stop = $ts->getTimestamp();
+
+            // Auto purge records on daily basis
+            $this->purge_records();
         } else {
             // Invalid type
             return;
@@ -737,7 +809,6 @@ class Events extends Engine
         if (empty($events['events']))
             return;
 
-        print_r($events);
         $mailer = new Mail_Notification();
         $hostname = new Hostname();
         $subject = lang('events_event_notification') . ' - ' . $hostname->get() . ($type == self::DAILY_NOTIFICATION ? " (" . $ts->format('M j, Y') . ")" : "");

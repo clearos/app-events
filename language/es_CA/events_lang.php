@@ -21,6 +21,7 @@ $lang['events_instant_flags'] = 'With instant notifications enabled, you must se
 $lang['events_instant_notifications'] = 'Instant Notifications';
 $lang['events_last_24_hours'] = 'Events - Last 24 Hours';
 $lang['events_monitoring_status'] = 'Event Monitoring Status';
+$lang['events_never'] = 'Never';
 $lang['events_older_than_1_day'] = 'Older than a day';
 $lang['events_older_than_1_month'] = 'Older than a month';
 $lang['events_older_than_1_week'] = 'Older than a week';
