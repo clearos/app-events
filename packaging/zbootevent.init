@@ -1,0 +1,59 @@
+#!/bin/sh
+#
+# Startup script to implement on boot event.
+#
+# chkconfig: 2345 99 01
+# description: Provides a way to trigger a post-boot event.
+
+. /etc/init.d/functions
+
+TRIGGER=/usr/sbin/trigger
+prog="bootevent"
+
+start() {
+    echo -n $"Starting $prog: "
+    $TRIGGER onboot >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        success
+    else
+        failure
+    fi
+    echo
+    touch /var/lock/subsys/zevent
+}
+
+stop() {
+    echo -n $"Starting $prog: "
+    success
+	echo
+	rm -f /var/lock/subsys/zevent
+}
+
+case "$1" in
+  start)
+	start
+	;;
+
+  stop)
+	stop
+	;;
+
+  restart)
+	start
+	;;
+
+  condrestart)
+	[ -e /var/lock/subsys/zevent ] && start
+	;;
+
+  status)
+    echo -n $"Status $prog: "
+    success
+	echo
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|restart|condrestart|status}"
+	exit 1
+esac
+
+exit 0

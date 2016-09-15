@@ -1,5 +1,13 @@
 #!/bin/sh
 
+# Remove boot event
+#------------------
+
+/sbin/chkconfig --del zbootevent
+
+# Disable event monitoring
+#-------------------------
+
 if [ -e /etc/clearos/events.conf ]; then
     logger -p local6.notice -t installer "app-events-core - disabling event monitoring"
     sed -i 's/^status\s*=.*/status = 0/' /etc/clearos/events.conf

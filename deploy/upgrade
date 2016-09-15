@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Add boot event
+#---------------
+
+/sbin/chkconfig --add zbootevent
+
 # Add sudoers entries
 #--------------------
 

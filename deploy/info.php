@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 $app['basename'] = 'events';
-$app['version'] = '2.1.13';
+$app['version'] = '2.3.0';
 $app['release'] = '1';
 $app['vendor'] = 'ClearFoundation';
 $app['packager'] = 'ClearFoundation';
@@ -44,6 +44,7 @@ $app['core_requires'] = array(
 
 $app['core_directory_manifest'] = array(
     '/var/clearos/events' => array(),
+    '/var/clearos/events/onboot' => array(),
 );
 
 $app['core_file_manifest'] = array(
@@ -70,6 +71,12 @@ $app['core_file_manifest'] = array(
     ),
     'events-notification' => array(
         'target' => '/usr/sbin/events-notification',
+        'mode' => '0755',
+        'owner' => 'root',
+        'group' => 'root',
+    ),
+    'zbootevent.init' => array(
+        'target' => '/etc/rc.d/init.d/zbootevent',
         'mode' => '0755',
         'owner' => 'root',
         'group' => 'root',
