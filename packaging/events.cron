@@ -1,2 +1,2 @@
-*/5 * * * root /usr/sbin/events-notification -i > /dev/null 2>&1
-0 0 * * * root /usr/sbin/events-notification -d > /dev/null 2>&1
+*/5 * * * * root /usr/sbin/events-notification -i > /dev/null 2>&1
+0   0 * * * root /usr/sbin/events-notification -d > /dev/null 2>&1
