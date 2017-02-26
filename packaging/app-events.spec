@@ -1,7 +1,7 @@
 
 Name: app-events
 Epoch: 1
-Version: 2.3.3
+Version: 2.3.20
 Release: 1%{dist}
 Summary: Events and Notifications
 License: GPLv3
@@ -83,6 +83,7 @@ exit 0
 %files core
 %defattr(-,root,root)
 %exclude /usr/clearos/apps/events/packaging
+%exclude /usr/clearos/apps/events/unify.json
 %dir /usr/clearos/apps/events
 %dir /var/clearos/events
 %dir /var/clearos/events/onboot
