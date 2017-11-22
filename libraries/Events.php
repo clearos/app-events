@@ -57,24 +57,12 @@ clearos_load_language('events');
 //--------
 
 use \clearos\apps\base\Configuration_File as Configuration_File;
-use \clearos\apps\base\Daemon as Daemon;
 use \clearos\apps\base\Engine as Engine;
 use \clearos\apps\base\File as File;
-use \clearos\apps\date\Time as Time;
-use \clearos\apps\events\SSP as SSP;
-use \clearos\apps\events\Event_Utils as Event_Utils;
-use \clearos\apps\mail_notification\Mail_Notification as Mail_Notification;
-use \clearos\apps\network\Hostname as Hostname;
 
 clearos_load_library('base/Configuration_File');
-clearos_load_library('base/Daemon');
 clearos_load_library('base/Engine');
 clearos_load_library('base/File');
-clearos_load_library('date/Time');
-clearos_load_library('events/SSP');
-clearos_load_library('events/Event_Utils');
-clearos_load_library('mail_notification/Mail_Notification');
-clearos_load_library('network/Hostname');
 
 // Exceptions
 //-----------
@@ -760,9 +748,21 @@ class Events extends Engine
     {
         clearos_profile(__METHOD__, __LINE__);
 
-        $this->_get_db_handle();
+        // Bail if we don't have support apps installed
+        if (!clearos_load_library('mail_notification/Mail_Notification'))
+            return;
 
-        $time = new Time();
+        if (!clearos_load_library('network/Hostname'))
+            return;
+
+        if (!clearos_load_library('date/Time'))
+            return;
+
+        $mailer = new \clearos\apps\mail_notification\Mail_Notification();
+        $hostname = new \clearos\apps\network\Hostname();
+        $time = new \clearos\apps\date\Time();
+
+        $this->_get_db_handle();
 
         date_default_timezone_set($time->get_time_zone());
 
@@ -809,8 +809,6 @@ class Events extends Engine
         if (empty($events['events']))
             return;
 
-        $mailer = new Mail_Notification();
-        $hostname = new Hostname();
         $subject = lang('events_event_notification') . ' - ' . $hostname->get() . ($type == self::DAILY_NOTIFICATION ? " (" . $ts->format('M j, Y') . ")" : "");
         $body = "<table cellspacing='0' cellpadding='8' border='0' style='font: Arial, sans-serif;'>\n";
         $body .= "  <tr>\n";
