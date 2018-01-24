@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 $app['basename'] = 'events';
-$app['version'] = '2.4.0';
+$app['version'] = '2.4.1';
 $app['release'] = '1';
 $app['vendor'] = 'ClearFoundation';
 $app['packager'] = 'ClearFoundation';
@@ -40,6 +40,7 @@ $app['core_requires'] = array(
     'clearsync',
     'csplugin-filewatch',
     'csplugin-events => 1.0-24',
+    'webconfig-php-pdo'
 );
 
 $app['core_directory_manifest'] = array(

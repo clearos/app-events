@@ -1,7 +1,7 @@
 
 Name: app-events
 Epoch: 1
-Version: 2.4.0
+Version: 2.4.1
 Release: 1%{dist}
 Summary: Events and Notifications
 License: GPLv3
@@ -22,6 +22,7 @@ Requires: app-base-core
 Requires: clearsync
 Requires: csplugin-filewatch
 Requires: csplugin-events => 1.0-24
+Requires: webconfig-php-pdo
 Obsoletes: app-clearsync-core
 
 %description core
