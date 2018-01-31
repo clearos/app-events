@@ -1,7 +1,7 @@
 
 Name: app-events
 Epoch: 1
-Version: 2.4.2
+Version: 2.4.3
 Release: 1%{dist}
 Summary: Events and Notifications
 License: GPLv3
