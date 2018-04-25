@@ -87,6 +87,6 @@ class ClearSyncd extends Daemon
     {
         clearos_profile(__METHOD__, __LINE__);
 
-        parent::__construct('clearsyncd');
+        parent::__construct('clearsync');
     }
 }

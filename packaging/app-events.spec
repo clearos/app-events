@@ -1,11 +1,13 @@
 
 Name: app-events
 Epoch: 1
-Version: 2.4.3
+Version: 2.5.0
 Release: 1%{dist}
 Summary: Events and Notifications
 License: GPLv3
-Group: ClearOS/Apps
+Group: Applications/Apps
+Packager: ClearFoundation
+Vendor: ClearFoundation
 Source: %{name}-%{version}.tar.gz
 Buildarch: noarch
 Requires: %{name}-core = 1:%{version}-%{release}
@@ -15,13 +17,14 @@ Requires: app-base
 The Events and Notifications app provides a way for other apps to listen for events that occur on the system.  You can view them here and/or configure bulk reports or notifications to be sent to you via email.
 
 %package core
-Summary: Events and Notifications - Core
+Summary: Events and Notifications - API
 License: LGPLv3
-Group: ClearOS/Libraries
+Group: Applications/API
 Requires: app-base-core
 Requires: clearsync
 Requires: csplugin-filewatch
 Requires: csplugin-events => 1.0-24
+Requires: csplugin-procwatch
 Requires: webconfig-php-pdo
 Obsoletes: app-clearsync-core
 
